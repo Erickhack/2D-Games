@@ -12,8 +12,6 @@ export default function MainPage() {
       <article className="basis-[1032px]">
         <Paragrapg />
       </article>
-
-      <SwitchBtn />
     </main>
   );
 }
