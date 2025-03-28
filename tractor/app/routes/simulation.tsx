@@ -9,6 +9,6 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function Simulation() {
+export default function Simulation(route: Route.ComponentProps) {
   return <SimulationPage />;
 }

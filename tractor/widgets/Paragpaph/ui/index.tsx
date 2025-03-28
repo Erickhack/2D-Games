@@ -19,8 +19,11 @@ export default function Paragrapg() {
           </h1>
 
           <ul className="flex max-w-[674px] flex-wrap gap-2">
-            {list.map((text) => (
-              <li className="w-max rounded-md bg-[#ECEDF0] px-2 py-2.5 text-[#1B1A22]">
+            {list.map((text, index) => (
+              <li
+                key={index}
+                className="w-max rounded-md bg-[#ECEDF0] px-2 py-2.5 text-[#1B1A22]"
+              >
                 {text}
               </li>
             ))}
