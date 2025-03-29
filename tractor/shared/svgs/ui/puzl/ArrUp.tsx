@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface IProps {
-  active: boolean;
+  active?: boolean;
 }
 
 export const ArrUp = (props: IProps) => {

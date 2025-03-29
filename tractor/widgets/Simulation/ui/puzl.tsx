@@ -1,5 +1,5 @@
 import { Edge, World, Vec2, Box, Body } from 'planck';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type RefObject } from 'react';
 // Импортируем Swiper и необходимые модули
 import { Swiper, SwiperSlide } from 'swiper/react';
 import type { Swiper as SwiperType } from 'swiper';
@@ -53,7 +53,9 @@ const PIECE_SIZES = [
   { width: 31, height: 104 },
 ];
 
-interface IProps {}
+interface IProps {
+  restoreRef: RefObject<(() => void | null) | null>;
+}
 
 export const Puzl = (props: IProps) => {
   // Создаем начальное состояние кусочков пазла
@@ -91,14 +93,13 @@ export const Puzl = (props: IProps) => {
   // Инициализация физического мира
   useEffect(() => {
     initPhysicsWorld();
+    props.restoreRef.current = resetPuzzle;
     return cleanupPhysicsWorld;
   }, []);
 
   // Функция инициализации физического мира
   const initPhysicsWorld = (): void => {
-    worldRef.current = new World({
-      gravity: Vec2(0, 2),
-    });
+    worldRef.current = new World();
 
     createBoundaries();
     startSimulation();
@@ -111,7 +112,7 @@ export const Puzl = (props: IProps) => {
     // Нижняя граница
     const ground = worldRef.current.createBody({
       type: 'static',
-      position: Vec2(0, CANVAS_HEIGHT),
+      position: new Vec2(0, CANVAS_HEIGHT),
     });
     ground.createFixture({
       shape: new Edge(Vec2(-CANVAS_WIDTH, 0), Vec2(CANVAS_WIDTH, 0)),
@@ -121,20 +122,20 @@ export const Puzl = (props: IProps) => {
     // Левая стена
     const leftWall = worldRef.current.createBody({
       type: 'static',
-      position: Vec2(0, 0),
+      position: new Vec2(0, 0),
     });
     leftWall.createFixture({
-      shape: new Edge(Vec2(0, 0), Vec2(0, CANVAS_HEIGHT)),
+      shape: new Edge(new Vec2(0, 0), new Vec2(0, CANVAS_HEIGHT)),
       friction: 0.3,
     });
 
     // Правая стена
     const rightWall = worldRef.current.createBody({
       type: 'static',
-      position: Vec2(CANVAS_WIDTH, 0),
+      position: new Vec2(CANVAS_WIDTH, 0),
     });
     rightWall.createFixture({
-      shape: new Edge(Vec2(0, 0), Vec2(0, CANVAS_HEIGHT)),
+      shape: new Edge(new Vec2(0, 0), new Vec2(0, CANVAS_HEIGHT)),
       friction: 0.3,
     });
   };
@@ -149,7 +150,7 @@ export const Puzl = (props: IProps) => {
 
     const body = worldRef.current.createBody({
       type: 'dynamic',
-      position: Vec2(x, y),
+      position: new Vec2(x, y),
       linearDamping: 0.5,
       angularDamping: 0.5,
     });
@@ -225,7 +226,7 @@ export const Puzl = (props: IProps) => {
     const body = bodiesRef.current[pieceId];
     if (body) {
       body.setType('kinematic');
-      body.setLinearVelocity(Vec2(0, 0));
+      body.setLinearVelocity(new Vec2(0, 0));
       body.setAngularVelocity(0);
     }
   };
@@ -242,7 +243,7 @@ export const Puzl = (props: IProps) => {
       // Обновляем позицию тела
       const body = bodiesRef.current[draggingPiece];
       if (body) {
-        body.setPosition(Vec2(x, y));
+        body.setPosition(new Vec2(x, y));
       }
     }
   };
@@ -275,7 +276,7 @@ export const Puzl = (props: IProps) => {
 
   // Размещение кусочка в правильной позиции
   const placePieceCorrectly = (piece: PuzzlePiece, body: Body): void => {
-    body.setPosition(Vec2(piece.correctX, piece.correctY));
+    body.setPosition(new Vec2(piece.correctX, piece.correctY));
     body.setType('static');
 
     setPuzzlePieces((prevPieces) =>
@@ -499,12 +500,10 @@ export const Puzl = (props: IProps) => {
 
         {/* Вертикальный Swiper с кусочками пазла внутри Canvas */}
         <div
-          className="absolute flex flex-col gap-[26px]"
+          className="absolute right-5 z-[5] flex w-[209px] flex-col gap-[26px]"
           style={{
             top: SWIPER_Y_POSITION,
-            right: 20,
             height: SWIPER_HEIGHT,
-            zIndex: 5,
           }}
         >
           {swiperPieces.length > 0 ? (
@@ -513,7 +512,7 @@ export const Puzl = (props: IProps) => {
                 onClick={slidePrev}
                 className="rounded-xl border-2 border-[#ffffff33] bg-[#ffffff33] py-3.5"
               >
-                <ArrUp active={false} />
+                <ArrUp />
               </Button>
               <Swiper
                 onSwiper={(swiper) => {
@@ -526,7 +525,7 @@ export const Puzl = (props: IProps) => {
                 slidesPerView={3}
                 spaceBetween={18}
                 pagination={{ clickable: true }}
-                className="h-full"
+                className="h-full w-[209px]"
                 style={{ pointerEvents: 'auto' }}
               >
                 {puzzlePieces.map((piece) => (
@@ -539,12 +538,12 @@ export const Puzl = (props: IProps) => {
                     {renderSwiperPiece(piece)}
                   </SwiperSlide>
                 ))}
-              </Swiper>
+              </Swiper> 
               <Button
                 className="rounded-xl border-2 border-[#ffffff33] bg-[#ffffff33] py-3.5"
                 onClick={slideNext}
               >
-                <ArrDown active />
+                <ArrDown  />
               </Button>
             </>
           ) : (
