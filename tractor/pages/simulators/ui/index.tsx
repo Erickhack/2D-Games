@@ -1,4 +1,3 @@
-import React from 'react';
 import { Simulation } from 'widgets/Simulation/ui';
 import {
   descriptoinOfSimulation1,

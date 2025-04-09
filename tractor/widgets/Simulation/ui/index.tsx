@@ -1,8 +1,8 @@
 import Button from 'shared/buttons/ui/Button';
 import { ResetSVG } from 'shared/svgs/ui/reset';
-import { Puzl } from './Puzl';
+import { Puzl } from './puzl';
 import { useRef } from 'react';
-import Tractor from './Tractor';
+import Tractor from './tractor';
 
 interface IProps {
   title: string;
@@ -29,7 +29,7 @@ export const Simulation = (props: IProps) => {
           <span className="text-[#1B1A22]">Перезапустить</span>
         </Button>
       </div>
-      
+
       <div>
         <span className="text-[20px]/[130%] text-[#1B1A22]">
           {props.description}
