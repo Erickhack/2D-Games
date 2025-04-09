@@ -1,7 +1,8 @@
 import Button from 'shared/buttons/ui/Button';
 import { ResetSVG } from 'shared/svgs/ui/reset';
-import { Puzl } from './puzl';
+import { Puzl } from './Puzl';
 import { useRef } from 'react';
+import Tractor from './Tractor';
 
 interface IProps {
   title: string;
@@ -28,13 +29,18 @@ export const Simulation = (props: IProps) => {
           <span className="text-[#1B1A22]">Перезапустить</span>
         </Button>
       </div>
+      
       <div>
         <span className="text-[20px]/[130%] text-[#1B1A22]">
           {props.description}
         </span>
       </div>
 
-      <Puzl restoreRef={restoreRef} />
+      {props.simulation === 'puzl' ? (
+        <Puzl restoreRef={restoreRef} />
+      ) : (
+        <Tractor />
+      )}
     </div>
   );
 };

@@ -115,7 +115,7 @@ export const Puzl = (props: IProps) => {
       position: new Vec2(0, CANVAS_HEIGHT),
     });
     ground.createFixture({
-      shape: new Edge(Vec2(-CANVAS_WIDTH, 0), Vec2(CANVAS_WIDTH, 0)),
+      shape: new Edge(new Vec2(-CANVAS_WIDTH, 0), new Vec2(CANVAS_WIDTH, 0)),
       friction: 0.3,
     });
 
@@ -490,7 +490,10 @@ export const Puzl = (props: IProps) => {
         }}
       >
         {/* Фоновое изображение */}
-        <div className="absolute h-full w-full bg-[url(puzl/backgrounds/cols_rows.png)] bg-contain bg-center bg-no-repeat" />
+        <div
+          className="absolute h-full w-full bg-contain bg-center bg-no-repeat"
+          style={{ backgroundImage: 'url(puzl/backgrounds/cols_rows.png)' }}
+        />
 
         <div className="absolute top-6 left-8 rounded-[6px] bg-white px-4 py-1.5">
           <span className="text-[20px]/[130%] text-[#047EFD]">
@@ -538,12 +541,12 @@ export const Puzl = (props: IProps) => {
                     {renderSwiperPiece(piece)}
                   </SwiperSlide>
                 ))}
-              </Swiper> 
+              </Swiper>
               <Button
                 className="rounded-xl border-2 border-[#ffffff33] bg-[#ffffff33] py-3.5"
                 onClick={slideNext}
               >
-                <ArrDown  />
+                <ArrDown />
               </Button>
             </>
           ) : (

@@ -1,17 +1,21 @@
-import { SwitchBtn } from 'shared/buttons/ui/SwitchBtn';
-import AuthorCard from 'widgets/AuthorCard';
-import Paragrapg from 'widgets/Paragpaph/ui';
+import { Banner } from 'widgets/Banner';
+import { VerticalWrapped } from 'widgets/VerticalWrapped';
+import { popularCards } from '../model';
 
-export default function MainPage() {
+function MainPage() {
   return (
-    <main className="flex justify-center gap-11 p-5 pt-16 pb-4">
-      <aside className="flex min-h-screen basis-2xs">
-        <AuthorCard />
-      </aside>
-
-      <article className="basis-[1032px]">
-        <Paragrapg />
-      </article>
+    <main className="flex flex-col gap-[220px] px-[42px]">
+      <div>
+        <Banner />
+      </div>
+      <div>
+        <VerticalWrapped cards={popularCards} title="Популярное за неделю" />
+      </div>
+      <div className="mb-[220px]">
+        <VerticalWrapped cards={popularCards} title="Популярное за неделю" />
+      </div>
     </main>
   );
 }
+
+export default MainPage;

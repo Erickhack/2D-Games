@@ -1,5 +1,5 @@
-import MainPage from 'pages/Main';
 import type { Route } from './+types/home';
+import HistoryPage from 'pages/History';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -8,6 +8,6 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function Main() {
-  return <MainPage />;
+export default function History() {
+  return <HistoryPage />;
 }

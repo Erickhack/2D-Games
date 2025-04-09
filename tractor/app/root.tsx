@@ -10,7 +10,8 @@ import {
 import type { Route } from './+types/root';
 import './app.css';
 import Header from 'widgets/Header';
-import { SwitchBtn } from 'shared/buttons/ui/SwitchBtn';
+import { SwitcherNavigateBtn } from 'shared/buttons/ui/SwitcherNavigateBtn';
+import Footer from 'widgets/Footer';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -38,8 +39,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Header />
         {children}
         <div className="fixed right-1/3 bottom-10 left-1/3 flex justify-center">
-          <SwitchBtn />
+          <SwitcherNavigateBtn />
         </div>
+        <Footer />
         <ScrollRestoration />
         <Scripts />
       </body>

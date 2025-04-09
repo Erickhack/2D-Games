@@ -1,4 +1,4 @@
-import MainPage from 'pages/main';
+import MainPage from 'pages/History';
 import type { Route } from './+types/home';
 import SimulationPage from 'pages/simulators/ui';
 
