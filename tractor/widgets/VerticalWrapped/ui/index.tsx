@@ -21,12 +21,12 @@ interface IParts {
 
 const PartCards = (props: IParts) => {
   const CardSize = [
-    ['max-w-[324px]', 'max-w-[561px]', 'max-w-[445px]'],
-    ['max-w-[445px]', 'max-w-[320px]', 'max-w-[565px]'],
+    ['col-span-3', 'col-span-5', 'col-span-4'],
+    ['col-span-4', 'col-span-3', 'col-span-5'],
   ];
 
   return (
-    <ul className="flex flex-wrap gap-8 justify-center">
+    <ul className="grid grid-cols-12 gap-8">
       {props.cards.map((card, index) => (
         <li
           className={

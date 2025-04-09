@@ -1,4 +1,3 @@
-import React from 'react';
 import { LogoSVG } from 'shared/svgs/ui/logo';
 
 export const Logo = () => {

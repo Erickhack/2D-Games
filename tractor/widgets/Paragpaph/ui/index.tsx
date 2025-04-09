@@ -22,7 +22,7 @@ export default function Paragrapg() {
             {list.map((text, index) => (
               <li
                 key={index}
-                className="w-max rounded-md bg-[#ECEDF0] px-2 py-2.5 text-[#1B1A22]"
+                className="w-max rounded-md bg-white px-2 py-2.5 text-[#1B1A22]"
               >
                 {text}
               </li>
