@@ -282,13 +282,7 @@ const Tractor: React.FC<Tractor> = () => {
 
     // Отрисовка отладочной информации
     if (CONFIG.simulation.debug.showInfo) {
-      renderDebugInfo(
-        ctx,
-        vehicleType,
-        wheelType,
-        vehicleBodyRef,
-        motorJointsRef,
-      );
+      renderDebugInfo(ctx, vehicleType, vehicleBodyRef, motorJointsRef);
     }
   };
 
@@ -403,6 +397,9 @@ const Tractor: React.FC<Tractor> = () => {
           height={CONFIG.canvas.height}
           className="block"
         />
+
+        <div></div>
+        <div></div>
       </div>
     </div>
   );

@@ -9,7 +9,6 @@ import { ArrDown } from 'shared/svgs/ui/puzl/ArrDown';
 import { ArrUp } from 'shared/svgs/ui/puzl/ArrUp';
 import Button from 'shared/buttons/ui/Button';
 
-// Определение типов
 interface PuzzlePiece {
   id: number;
   src: string;
@@ -21,6 +20,7 @@ interface PuzzlePiece {
   height: number;
   placed: boolean;
   inSwiper: boolean;
+  returning?: boolean; // Новое свойство для анимации возврата
 }
 
 interface BodyUserData {
@@ -324,8 +324,40 @@ export const Puzl = (props: IProps) => {
         // Кусочек находится близко к правильной позиции
         placePieceCorrectly(piece, body);
       } else {
-        // Возвращаем тип тела к динамическому
-        body.setType('dynamic');
+        // Удаляем физическое тело
+        if (worldRef.current) {
+          worldRef.current.destroyBody(body);
+          delete bodiesRef.current[draggingPiece];
+        }
+
+        // Анимируем возврат кусочка в Swiper
+        setPuzzlePieces((prevPieces) =>
+          prevPieces.map((p) =>
+            p.id === piece.id
+              ? {
+                  ...p,
+                  x: position.x, // Текущая позиция для начала анимации
+                  y: position.y,
+                  inSwiper: true, // Помечаем, что кусочек возвращается в Swiper
+                  returning: true, // Добавляем флаг для анимации
+                }
+              : p,
+          ),
+        );
+
+        // Через небольшую задержку завершаем анимацию
+        setTimeout(() => {
+          setPuzzlePieces((prevPieces) =>
+            prevPieces.map((p) =>
+              p.id === piece.id
+                ? {
+                    ...p,
+                    returning: false, // Убираем флаг анимации
+                  }
+                : p,
+            ),
+          );
+        }, 500); // Длительность анимации
       }
     }
 
@@ -424,7 +456,7 @@ export const Puzl = (props: IProps) => {
 
   // Рендеринг кусочка пазла на canvas
   const renderPuzzlePiece = (piece: PuzzlePiece) => {
-    if (piece.inSwiper) return null;
+    if (piece.inSwiper && !piece.returning) return null;
 
     return (
       <div
@@ -439,8 +471,11 @@ export const Puzl = (props: IProps) => {
           backgroundSize: 'contain',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          transition: piece.placed ? 'all 0.3s ease' : 'none',
+          transition:
+            piece.placed || piece.returning ? 'all 0.5s ease' : 'none',
           zIndex: draggingPiece === piece.id ? 10 : 1,
+          opacity: piece.returning ? '0' : '1', // Постепенно исчезает при возврате
+          transform: piece.returning ? 'scale(0.4)' : 'scale(1)', // Уменьшается при возврате
           border:
             activeHint === piece.id && !piece.placed
               ? '2px solid #4CAF50'

@@ -79,57 +79,27 @@ export const renderWheels = (
 export const renderDebugInfo = (
   ctx: CanvasRenderingContext2D,
   vehicleType: VehicleType,
-  wheelType: WheelType,
   vehicleBodyRef: RefObject<planck.Body | null>,
   motorJointsRef: RefObject<any[]>,
 ) => {
   if (!vehicleBodyRef.current) return;
 
-  const pos = vehicleBodyRef.current.getPosition();
-  const velocity = vehicleBodyRef.current.getLinearVelocity();
-  const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+  //   const velocity = vehicleBodyRef.current.getLinearVelocity();
+  //   const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
 
-  // Добавляем информацию о расстоянии до поверхности
-  const terrainTopY =
-    CONFIG.terrain.asphalt.positionY - CONFIG.terrain.asphalt.height / 2;
-  const distanceToGround =
-    pos.y +
-    CONFIG.vehicle[vehicleType].height /
-      (2 * CONFIG.vehicle[vehicleType].scale) -
-    terrainTopY;
+  ctx.fillStyle = '#FFFFFFCC';
+  ctx.font = '18px Arial';
 
-  ctx.fillStyle = '#000000';
-  ctx.font = '14px Arial';
-  ctx.fillText(`Транспорт: ${vehicleType}`, 10, 20);
-  ctx.fillText(`Колеса: ${wheelType}`, 10, 40);
-  ctx.fillText(`Позиция: X=${pos.x.toFixed(2)}, Y=${pos.y.toFixed(2)}`, 10, 60);
-  ctx.fillText(`Скорость: ${speed.toFixed(2)}`, 10, 80);
-  ctx.fillText(`Расстояние до земли: ${distanceToGround.toFixed(2)}`, 10, 100);
+  ctx.fillText(`Скорость двигателя:`, 32, CONFIG.canvas.height - 59);
+  ctx.fillText(`Транспорт:`, 32, CONFIG.canvas.height - 25);
 
-  // Добавляем информацию о моторах
-  if (motorJointsRef.current.length > 0) {
-    try {
-      if (
-        motorJointsRef.current[0] &&
-        motorJointsRef.current[0].getMotorSpeed
-      ) {
-        ctx.fillText(
-          `Скорость мотора: ${motorJointsRef.current[0].getMotorSpeed().toFixed(2)}`,
-          10,
-          140,
-        );
-      }
-    } catch (e) {
-      ctx.fillText(`Ошибка получения скорости мотора`, 10, 140);
-    }
+  const vehicle = vehicleType === 'car' ? 'Трактор' : 'Трактор 1';
 
-    ctx.fillText(
-      `Крутящий момент: ${CONFIG.wheel[wheelType].motorTorque}`,
-      10,
-      160,
-    );
-  }
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '18px Arial';
 
-  // Добавляем информацию о нажатых клавишах
-  ctx.fillText(`Управление: ←→(движение)`, 10, 180);
+  const speed = motorJointsRef.current[0].getMotorSpeed().toFixed(2);
+
+  ctx.fillText(speed, 246, CONFIG.canvas.height - 59);
+  ctx.fillText(vehicle, 246, CONFIG.canvas.height - 25);
 };
