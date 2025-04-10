@@ -416,12 +416,15 @@ export const Puzl = (props: IProps) => {
     );
   };
 
-  // Новый обработчик клика на элемент в Swiper
-  const handleSwiperPieceClick = (
+  // Модифицируем обработчик для кусочков в Swiper
+  const handleSwiperPieceMouseDown = (
     e: React.MouseEvent,
     pieceId: number,
   ): void => {
+    // Предотвращаем стандартное поведение браузера для всех кликов
+    e.preventDefault();
     e.stopPropagation();
+
     const piece = puzzlePieces.find((p) => p.id === pieceId);
     if (!piece || piece.placed) return;
 
@@ -444,16 +447,6 @@ export const Puzl = (props: IProps) => {
       // Начинаем перетаскивание сразу после создания
       setDraggingPiece(pieceId);
       body.setType('kinematic');
-
-      // Проверяем, не находится ли кусочек близко к правильной позиции
-      const distanceToCorrect = Math.sqrt(
-        Math.pow(x - piece.correctX, 2) + Math.pow(y - piece.correctY, 2),
-      );
-
-      if (distanceToCorrect < SNAP_THRESHOLD) {
-        placePieceCorrectly(piece, body);
-        setDraggingPiece(null);
-      }
     }
   };
 
@@ -474,11 +467,12 @@ export const Puzl = (props: IProps) => {
   };
 
   return (
-    <div
+    <div /* // Добавим обработчик контекстного меню для всего компонента */
       className="flex flex-col items-center justify-center pt-8 pb-4"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onContextMenu={(e) => e.preventDefault()} // Предотвращаем появление контекстного меню
     >
       <div
         ref={canvasRef}
@@ -521,7 +515,6 @@ export const Puzl = (props: IProps) => {
                 onSwiper={(swiper) => {
                   swiperRef.current = swiper;
                 }}
-                cssMode
                 mousewheel={false}
                 keyboard={false}
                 direction="vertical"
@@ -530,13 +523,16 @@ export const Puzl = (props: IProps) => {
                 pagination={{ clickable: true }}
                 className="h-full w-[209px]"
                 style={{ pointerEvents: 'auto' }}
+                simulateTouch={false} // Отключаем симуляцию касания
+                allowTouchMove={false} // Отключаем перемещение при касании
               >
                 {puzzlePieces.map((piece) => (
                   <SwiperSlide
                     className="w-full rounded-xl border-2 border-[#ffffff33] bg-[#ffffff33] transition-colors hover:border-[#ffffff66]"
                     key={`swiper-${piece.id}`}
                     style={{ pointerEvents: 'auto' }}
-                    onClick={(e) => handleSwiperPieceClick(e, piece.id)}
+                    onMouseDown={(e) => handleSwiperPieceMouseDown(e, piece.id)}
+                    onContextMenu={(e) => e.preventDefault()} // Предотвращаем появление контекстного меню
                   >
                     {renderSwiperPiece(piece)}
                   </SwiperSlide>
