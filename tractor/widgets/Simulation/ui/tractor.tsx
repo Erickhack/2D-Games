@@ -7,13 +7,30 @@ import {
   type TerrainType,
 } from '../model';
 import { TractorController } from './TractorController';
+import { createTerrain, createVehicle, createWheels } from '../lib/create';
+import {
+  renderDebugInfo,
+  renderTerrain,
+  renderVehicle,
+  renderWheels,
+} from '../lib/render';
 
 interface Tractor {}
+
+// Логирование
+export const logDebug = (message: string, ...args: any[]) => {
+  console.log(`[DEBUG] ${message}`, ...args);
+};
+
+export const logError = (message: string, ...args: any[]) => {
+  console.error(`[ERROR] ${message}`, ...args);
+};
 
 const Tractor: React.FC<Tractor> = () => {
   const [vehicleType, setVehicleType] = useState<VehicleType>('car');
   const [wheelType, setWheelType] = useState<WheelType>('normal');
   const [terrainType, setTerrainType] = useState<TerrainType>('asphalt');
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<planck.World | null>(null);
   const vehicleBodyRef = useRef<planck.Body | null>(null);
@@ -27,45 +44,6 @@ const Tractor: React.FC<Tractor> = () => {
   const switchTransport = () => {
     setVehicleType((prev) => (prev === 'car' ? 'truck' : 'car'));
     setWheelType((prev) => (prev === 'normal' ? 'caterpillar' : 'normal'));
-  };
-
-  // Логирование
-  const logDebug = (message: string, ...args: any[]) => {
-    console.log(`[DEBUG] ${message}`, ...args);
-  };
-
-  const logError = (message: string, ...args: any[]) => {
-    console.error(`[ERROR] ${message}`, ...args);
-  };
-
-  // Проверка контактов колес с поверхностью
-  const checkWheelsOnGround = () => {
-    let wheelsOnGround = 0;
-
-    wheelsRef.current.forEach((wheel) => {
-      try {
-        // Получаем список контактных ребер
-        const contactList = wheel.getContactList();
-        let hasContact = false;
-
-        // Проверяем все контакты колеса
-        for (let ce = contactList; ce; ce = ce.next) {
-          // Проверяем, что контакт существует, включен и активен
-          if (ce.contact && ce.contact.isEnabled() && ce.contact.isTouching()) {
-            hasContact = true;
-            break;
-          }
-        }
-
-        if (hasContact) {
-          wheelsOnGround++;
-        }
-      } catch (e) {
-        // Игнорируем ошибки
-      }
-    });
-
-    return wheelsOnGround;
   };
 
   // Загрузка изображений
@@ -163,10 +141,18 @@ const Tractor: React.FC<Tractor> = () => {
     createTerrain(world);
 
     // Создаем тело транспорта
-    createVehicle(world, vehicleType);
+    createVehicle(world, vehicleType, vehicleBodyRef);
 
     // Создаем колеса
-    createWheels(world, wheelType);
+    createWheels(
+      world,
+      wheelType,
+      vehicleType,
+      vehicleBodyRef,
+      wheelsRef,
+      jointsRef,
+      motorJointsRef,
+    );
 
     // Запускаем анимацию
     startSimulation();
@@ -197,213 +183,6 @@ const Tractor: React.FC<Tractor> = () => {
       vehicleBodyRef.current = null;
     };
   }, [imagesLoaded, vehicleType, wheelType]);
-
-  // Создание поверхностей
-  const createTerrain = (world: planck.World) => {
-    const canvasWidth = CONFIG.canvas.width;
-
-    logDebug('Creating terrain');
-
-    // Создаем асфальт
-    const asphaltBody = world.createBody({
-      type: 'static',
-      position: planck.Vec2(canvasWidth / 4, CONFIG.terrain.asphalt.positionY),
-    });
-
-    const asphaltShape = planck.Box(
-      canvasWidth,
-      CONFIG.terrain.asphalt.height / 2,
-    );
-    asphaltBody.createFixture({
-      shape: asphaltShape,
-      friction: CONFIG.terrain.asphalt.friction,
-    });
-    logDebug('Asphalt created at position:', asphaltBody.getPosition());
-  };
-
-  // Создание транспортного средства
-  const createVehicle = (world: planck.World, type: VehicleType) => {
-    const vehicleConfig = CONFIG.vehicle[type];
-    const canvasWidth = CONFIG.canvas.width;
-
-    logDebug('Creating vehicle:', type);
-    logDebug('Vehicle config:', vehicleConfig);
-
-    // Размеры тела
-    const width = vehicleConfig.width / vehicleConfig.scale;
-    const height = vehicleConfig.height / vehicleConfig.scale;
-    logDebug('Vehicle dimensions:', { width, height });
-
-    // Вычисляем правильную позицию Y для транспорта
-    // Располагаем транспорт прямо над поверхностью
-    const vehicleY =
-      CONFIG.terrain.asphalt.positionY -
-      CONFIG.terrain.asphalt.height / 2 -
-      height / 2 -
-      50; // 5 пикселей запаса
-
-    // Создаем тело
-    const vehicleBody = world.createBody({
-      type: 'dynamic',
-      position: planck.Vec2(vehicleConfig.position.x * canvasWidth, vehicleY),
-      angularDamping: 0.5, // Добавляем затухание вращения,
-    });
-
-    // Создаем форму
-    const vehicleShape = planck.Box(width / 2, height / 2);
-
-    // Добавляем фикстуру к телу
-    vehicleBody.createFixture({
-      shape: vehicleShape,
-      density: vehicleConfig.density,
-      friction: vehicleConfig.friction,
-      restitution: vehicleConfig.restitution,
-    });
-
-    vehicleBodyRef.current = vehicleBody;
-    logDebug('Vehicle created at position:', vehicleBody.getPosition());
-    logDebug('Vehicle fixture properties:', {
-      density: vehicleConfig.density,
-      friction: vehicleConfig.friction,
-      restitution: vehicleConfig.restitution,
-    });
-
-    if (vehicleBodyRef.current) {
-      logDebug('Vehicle Y position vs terrain Y position:', {
-        vehicleY: vehicleBody.getPosition().y,
-        asphaltY: CONFIG.terrain.asphalt.positionY,
-        terrainTopY:
-          CONFIG.terrain.asphalt.positionY - CONFIG.terrain.asphalt.height / 2,
-        distanceToGround:
-          vehicleBody.getPosition().y -
-          (CONFIG.terrain.asphalt.positionY -
-            CONFIG.terrain.asphalt.height / 2),
-      });
-    }
-  };
-
-  // Создание колес
-  const createWheels = (world: planck.World, type: WheelType) => {
-    if (!vehicleBodyRef.current) {
-      logError('Cannot create wheels: vehicle body is null');
-      return;
-    }
-
-    const wheelConfig = CONFIG.wheel[type];
-    const vehicleConfig = CONFIG.vehicle[vehicleType];
-
-    logDebug('Creating wheels:', type);
-    logDebug('Wheel config:', wheelConfig);
-
-    // Размеры транспорта
-    const vehicleWidth = vehicleConfig.width / vehicleConfig.scale;
-    const vehicleHeight = vehicleConfig.height / vehicleConfig.scale;
-
-    // Радиус колеса
-    const wheelRadius = wheelConfig.radius / wheelConfig.scale;
-    logDebug('Wheel radius:', wheelRadius);
-
-    // Создаем колеса в указанных позициях
-    wheelConfig.positions.forEach((pos, index) => {
-      // Позиция колеса относительно центра транспорта
-      const wheelPos = planck.Vec2(pos.x * vehicleWidth, pos.y * vehicleHeight);
-      logDebug(`Wheel ${index} relative position:`, wheelPos);
-
-      // Создаем тело колеса
-      const wheelBody = world.createBody({
-        type: 'dynamic',
-        position: planck.Vec2(
-          vehicleBodyRef.current!.getPosition().x + wheelPos.x,
-          vehicleBodyRef.current!.getPosition().y + wheelPos.y,
-        ),
-      });
-
-      // Создаем форму колеса (круг)
-      const wheelShape = planck.Circle(wheelRadius);
-
-      // Добавляем фикстуру к колесу
-      wheelBody.createFixture({
-        shape: wheelShape,
-        density: wheelConfig.density,
-        friction: wheelConfig.friction,
-        restitution: wheelConfig.restitution,
-      });
-
-      // Добавляем колесо в список
-      wheelsRef.current.push(wheelBody);
-
-      logDebug(`Wheel ${index} created at position:`, wheelBody.getPosition());
-      logDebug(`Wheel ${index} fixture properties:`, {
-        density: wheelConfig.density,
-        friction: wheelConfig.friction,
-        restitution: wheelConfig.restitution,
-      });
-
-      // Создаем соединение между транспортом и колесом
-      try {
-        const jointDef = {
-          motorSpeed: 0, // Начальная скорость мотора
-          maxMotorTorque: wheelConfig.motorTorque,
-          enableMotor: true,
-        };
-
-        logDebug(`Creating joint ${index} with properties:`, jointDef);
-
-        const joint = planck.RevoluteJoint(
-          jointDef,
-          vehicleBodyRef.current!,
-          wheelBody,
-          wheelBody.getPosition(),
-        );
-
-        // Добавляем соединение в мир
-        const createdJoint = world.createJoint(joint);
-
-        if (createdJoint) {
-          jointsRef.current.push(createdJoint);
-          motorJointsRef.current.push(createdJoint);
-
-          // Проверяем, есть ли метод isMotorEnabled
-          let motorEnabled = false;
-          try {
-            motorEnabled = createdJoint.isMotorEnabled();
-          } catch (e) {
-            logError(`Error calling isMotorEnabled on joint ${index}:`, e);
-          }
-
-          logDebug(`Joint ${index} created successfully`);
-          logDebug(`Joint ${index} motor enabled:`, motorEnabled);
-          logDebug(`Joint ${index} max motor torque:`, wheelConfig.motorTorque);
-
-          // Проверяем, есть ли метод getMotorSpeed
-          try {
-            const motorSpeed = createdJoint.getMotorSpeed();
-            logDebug(`Joint ${index} initial motor speed:`, motorSpeed);
-          } catch (e) {
-            logError(`Error calling getMotorSpeed on joint ${index}:`, e);
-          }
-
-          // Проверяем доступные методы
-          const methods = [];
-          for (const p in createdJoint) {
-            const prop = p as keyof typeof createdJoint;
-            if (typeof createdJoint[prop] === 'function') {
-              methods.push(prop);
-            }
-          }
-          logDebug(`Joint ${index} available methods:`, methods);
-        } else {
-          logError(`Failed to create joint ${index}`);
-        }
-      } catch (e) {
-        logError(`Error creating joint for wheel ${index}:`, e);
-      }
-    });
-
-    logDebug('Total wheels created:', wheelsRef.current.length);
-    logDebug('Total joints created:', jointsRef.current.length);
-    logDebug('Total motor joints created:', motorJointsRef.current.length);
-  };
 
   // Запуск симуляции
   const startSimulation = () => {
@@ -467,13 +246,6 @@ const Tractor: React.FC<Tractor> = () => {
             // Игнорируем ошибки здесь, чтобы не спамить консоль
           }
         });
-
-        const wheelsOnGround = checkWheelsOnGround();
-        if (wheelsOnGround > 0) {
-          logDebug(
-            `Wheels on ground: ${wheelsOnGround}/${wheelsRef.current.length}`,
-          );
-        }
       }
     }
   };
@@ -503,147 +275,21 @@ const Tractor: React.FC<Tractor> = () => {
     renderTerrain(ctx);
 
     // Отрисовка транспорта
-    renderVehicle(ctx);
+    renderVehicle(ctx, vehicleType, vehicleBodyRef, imagesRef);
 
     // Отрисовка колес
-    renderWheels(ctx);
+    renderWheels(ctx, wheelType, imagesRef, wheelsRef);
 
     // Отрисовка отладочной информации
     if (CONFIG.simulation.debug.showInfo) {
-      renderDebugInfo(ctx);
-    }
-  };
-
-  // Отрисовка поверхностей
-  const renderTerrain = (ctx: CanvasRenderingContext2D) => {
-    const canvasWidth = CONFIG.canvas.width;
-
-    // Отрисовка асфальта
-    ctx.fillStyle = CONFIG.terrain.asphalt.color;
-    ctx.fillRect(
-      0,
-      CONFIG.terrain.asphalt.positionY - CONFIG.terrain.asphalt.height / 2,
-      canvasWidth / 2,
-      CONFIG.terrain.asphalt.height,
-    );
-  };
-
-  // Отрисовка транспорта
-  const renderVehicle = (ctx: CanvasRenderingContext2D) => {
-    if (!vehicleBodyRef.current || !imagesRef.current.vehicle) return;
-
-    const vehicleConfig = CONFIG.vehicle[vehicleType];
-    const pos = vehicleBodyRef.current.getPosition();
-    const angle = vehicleBodyRef.current.getAngle();
-
-    const width = vehicleConfig.width;
-    const height = vehicleConfig.height;
-
-    ctx.save();
-    ctx.translate(pos.x, pos.y);
-    ctx.rotate(angle);
-    ctx.drawImage(
-      imagesRef.current.vehicle,
-      -width / 2,
-      -height / 2,
-      width,
-      height,
-    );
-    ctx.restore();
-  };
-
-  // Отрисовка колес
-  const renderWheels = (ctx: CanvasRenderingContext2D) => {
-    if (!imagesRef.current.wheel) return;
-
-    const wheelConfig = CONFIG.wheel[wheelType];
-
-    wheelsRef.current.forEach((wheel) => {
-      const pos = wheel.getPosition();
-      const angle = wheel.getAngle();
-      const diameter = wheelConfig.radius * 2;
-
-      ctx.save();
-      ctx.translate(pos.x, pos.y);
-      ctx.rotate(angle);
-      ctx.drawImage(
-        imagesRef.current.wheel,
-        -diameter / 2,
-        -diameter / 2,
-        diameter,
-        diameter,
-      );
-      ctx.restore();
-    });
-  };
-
-  // Отрисовка отладочной информации
-  const renderDebugInfo = (ctx: CanvasRenderingContext2D) => {
-    if (!vehicleBodyRef.current) return;
-
-    const pos = vehicleBodyRef.current.getPosition();
-    const velocity = vehicleBodyRef.current.getLinearVelocity();
-    const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-
-    // Добавляем информацию о расстоянии до поверхности
-    const terrainTopY =
-      CONFIG.terrain.asphalt.positionY - CONFIG.terrain.asphalt.height / 2;
-    const distanceToGround =
-      pos.y +
-      CONFIG.vehicle[vehicleType].height /
-        (2 * CONFIG.vehicle[vehicleType].scale) -
-      terrainTopY;
-
-    ctx.fillStyle = '#000000';
-    ctx.font = '14px Arial';
-    ctx.fillText(`Транспорт: ${vehicleType}`, 10, 20);
-    ctx.fillText(`Колеса: ${wheelType}`, 10, 40);
-    ctx.fillText(
-      `Позиция: X=${pos.x.toFixed(2)}, Y=${pos.y.toFixed(2)}`,
-      10,
-      60,
-    );
-    ctx.fillText(`Скорость: ${speed.toFixed(2)}`, 10, 80);
-    ctx.fillText(
-      `Расстояние до земли: ${distanceToGround.toFixed(2)}`,
-      10,
-      100,
-    );
-
-    // Проверяем, сколько колес на земле
-    const wheelsOnGround = checkWheelsOnGround();
-    ctx.fillText(
-      `Колес на земле: ${wheelsOnGround}/${wheelsRef.current.length}`,
-      10,
-      120,
-    );
-
-    // Добавляем информацию о моторах
-    if (motorJointsRef.current.length > 0) {
-      try {
-        if (
-          motorJointsRef.current[0] &&
-          motorJointsRef.current[0].getMotorSpeed
-        ) {
-          ctx.fillText(
-            `Скорость мотора: ${motorJointsRef.current[0].getMotorSpeed().toFixed(2)}`,
-            10,
-            140,
-          );
-        }
-      } catch (e) {
-        ctx.fillText(`Ошибка получения скорости мотора`, 10, 140);
-      }
-
-      ctx.fillText(
-        `Крутящий момент: ${CONFIG.wheel[wheelType].motorTorque}`,
-        10,
-        160,
+      renderDebugInfo(
+        ctx,
+        vehicleType,
+        wheelType,
+        vehicleBodyRef,
+        motorJointsRef,
       );
     }
-
-    // Добавляем информацию о нажатых клавишах
-    ctx.fillText(`Управление: ←→(движение)`, 10, 180);
   };
 
   // Применение движения к колесам
@@ -651,9 +297,6 @@ const Tractor: React.FC<Tractor> = () => {
     if (wheelsRef.current.length === 0) {
       return;
     }
-
-    // Проверяем, сколько колес на земле
-    const wheelsOnGround = checkWheelsOnGround();
 
     // Применяем вращение к каждому колесу
     wheelsRef.current.forEach((wheel) => {
