@@ -30,10 +30,11 @@ const PartCards = (props: IParts) => {
       {props.cards.map((card, index) => (
         <li
           className={
-            'flex h-[205px] flex-col gap-6 rounded-3xl bg-white p-[18px]' +
+            'flex flex-col gap-6 rounded-3xl bg-white p-[18px]' +
             ' ' +
             `${CardSize[props.index][index]}`
           }
+          key={`${card.title}-${index}`}
         >
           <div className="flex items-center justify-between">
             <img src={card.img} width={44} height={44} />
