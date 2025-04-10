@@ -109,33 +109,62 @@ export const Puzl = (props: IProps) => {
   const createBoundaries = (): void => {
     if (!worldRef.current) return;
 
-    // Нижняя граница
+    // Находим максимальные размеры кусочков для учета при создании границ
+    const maxPieceWidth = Math.max(...PIECE_SIZES.map((size) => size.width));
+    const maxPieceHeight = Math.max(...PIECE_SIZES.map((size) => size.height));
+
+    const halfMaxWidth = maxPieceWidth / 2;
+    const halfMaxHeight = maxPieceHeight / 2;
+
+    // Нижняя граница (с учетом размера кусочков)
     const ground = worldRef.current.createBody({
       type: 'static',
-      position: new Vec2(0, CANVAS_HEIGHT),
+      position: new Vec2(0, CANVAS_HEIGHT - halfMaxHeight),
     });
     ground.createFixture({
-      shape: new Edge(new Vec2(-CANVAS_WIDTH, 0), new Vec2(CANVAS_WIDTH, 0)),
+      shape: new Edge(
+        new Vec2(-CANVAS_WIDTH, 0),
+        new Vec2(CANVAS_WIDTH * 2, 0),
+      ),
+      friction: 0.3,
+    });
+
+    // Верхняя граница
+    const ceiling = worldRef.current.createBody({
+      type: 'static',
+      position: new Vec2(0, halfMaxHeight),
+    });
+    ceiling.createFixture({
+      shape: new Edge(
+        new Vec2(-CANVAS_WIDTH, 0),
+        new Vec2(CANVAS_WIDTH * 2, 0),
+      ),
       friction: 0.3,
     });
 
     // Левая стена
     const leftWall = worldRef.current.createBody({
       type: 'static',
-      position: new Vec2(0, 0),
+      position: new Vec2(halfMaxWidth, 0),
     });
     leftWall.createFixture({
-      shape: new Edge(new Vec2(0, 0), new Vec2(0, CANVAS_HEIGHT)),
+      shape: new Edge(
+        new Vec2(0, -CANVAS_HEIGHT),
+        new Vec2(0, CANVAS_HEIGHT * 2),
+      ),
       friction: 0.3,
     });
 
     // Правая стена
     const rightWall = worldRef.current.createBody({
       type: 'static',
-      position: new Vec2(CANVAS_WIDTH, 0),
+      position: new Vec2(CANVAS_WIDTH - halfMaxWidth, 0),
     });
     rightWall.createFixture({
-      shape: new Edge(new Vec2(0, 0), new Vec2(0, CANVAS_HEIGHT)),
+      shape: new Edge(
+        new Vec2(0, -CANVAS_HEIGHT),
+        new Vec2(0, CANVAS_HEIGHT * 2),
+      ),
       friction: 0.3,
     });
   };
@@ -231,7 +260,30 @@ export const Puzl = (props: IProps) => {
     }
   };
 
-  // Обработчик перетаскивания
+  // Добавьте функцию для ограничения позиции в пределах canvas
+  const clampPosition = (
+    x: number,
+    y: number,
+    pieceWidth: number,
+    pieceHeight: number,
+  ): Vec2 => {
+    // Учитываем размеры кусочка при ограничении
+    const halfWidth = pieceWidth / 2;
+    const halfHeight = pieceHeight / 2;
+
+    // Ограничиваем по X
+    const clampedX = Math.max(halfWidth, Math.min(CANVAS_WIDTH - halfWidth, x));
+
+    // Ограничиваем по Y
+    const clampedY = Math.max(
+      halfHeight,
+      Math.min(CANVAS_HEIGHT - halfHeight, y),
+    );
+
+    return new Vec2(clampedX, clampedY);
+  };
+
+  // Модифицируем обработчик перетаскивания
   const handleMouseMove = (e: React.MouseEvent): void => {
     if (draggingPiece === null) return;
 
@@ -240,10 +292,16 @@ export const Puzl = (props: IProps) => {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      // Обновляем позицию тела
-      const body = bodiesRef.current[draggingPiece];
-      if (body) {
-        body.setPosition(new Vec2(x, y));
+      const piece = puzzlePieces.find((p) => p.id === draggingPiece);
+      if (piece) {
+        // Ограничиваем позицию в пределах canvas
+        const clampedPosition = clampPosition(x, y, piece.width, piece.height);
+
+        // Обновляем позицию тела
+        const body = bodiesRef.current[draggingPiece];
+        if (body) {
+          body.setPosition(clampedPosition);
+        }
       }
     }
   };
@@ -416,7 +474,7 @@ export const Puzl = (props: IProps) => {
     );
   };
 
-  // Модифицируем обработчик для кусочков в Swiper
+  // Также модифицируем обработчик для кусочков в Swiper
   const handleSwiperPieceMouseDown = (
     e: React.MouseEvent,
     pieceId: number,
@@ -434,13 +492,27 @@ export const Puzl = (props: IProps) => {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
+      // Ограничиваем позицию в пределах canvas
+      const clampedPosition = clampPosition(x, y, piece.width, piece.height);
+
       // Создаем физическое тело для кусочка сразу в позиции курсора
-      const body = createBodyForPiece(piece, x, y);
+      const body = createBodyForPiece(
+        piece,
+        clampedPosition.x,
+        clampedPosition.y,
+      );
 
       // Обновляем состояние кусочка
       setPuzzlePieces((prevPieces) =>
         prevPieces.map((p) =>
-          p.id === pieceId ? { ...p, x, y, inSwiper: false } : p,
+          p.id === pieceId
+            ? {
+                ...p,
+                x: clampedPosition.x,
+                y: clampedPosition.y,
+                inSwiper: false,
+              }
+            : p,
         ),
       );
 
