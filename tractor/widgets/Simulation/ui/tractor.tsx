@@ -14,6 +14,8 @@ import {
   renderVehicle,
   renderWheels,
 } from '../lib/render';
+import { Left } from 'shared/svgs/ui/arrows/chevron/Left';
+import { Right } from 'shared/svgs/ui/arrows/chevron/Right';
 
 interface Tractor {}
 
@@ -391,15 +393,23 @@ const Tractor: React.FC<Tractor> = () => {
       >
         <TractorController switchTransport={switchTransport} />
 
+        <div className="absolute right-8 bottom-6 flex gap-4">
+          <div className="flex h-[82px] w-[82px] flex-col items-center justify-center rounded-[17.18px] border-2 border-[#FFFFFF33] bg-[##FFFFFF33] backdrop-blur-[2px]">
+            <Left />
+            <span className="text-sm font-medium">Назад</span>
+          </div>
+          <div className="flex h-[82px] w-[82px] flex-col items-center justify-center rounded-[17.18px] border-2 border-[#FFFFFF33] bg-[##FFFFFF33] backdrop-blur-[2px]">
+            <Right />
+            <span className="text-sm font-medium">Вперед</span>
+          </div>
+        </div>
+
         <canvas
           ref={canvasRef}
           width={CONFIG.canvas.width}
           height={CONFIG.canvas.height}
           className="block"
         />
-
-        <div></div>
-        <div></div>
       </div>
     </div>
   );
