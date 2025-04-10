@@ -220,3 +220,115 @@ export const createWheels = (
   logDebug('Total joints created:', jointsRef.current.length);
   logDebug('Total motor joints created:', motorJointsRef.current.length);
 };
+
+// Функция для создания декоративных элементов
+export const createDecorations = (
+  world: planck.World,
+  vehicleType: VehicleType,
+  wheelType: WheelType,
+  vehicleBodyRef: RefObject<planck.Body | null>,
+  decorationsRef: RefObject<planck.Body[]>,
+  decorationJointsRef: RefObject<planck.Joint[]>,
+) => {
+  if (!vehicleBodyRef.current) {
+    logError('Cannot create decorations: vehicle body is null');
+    return;
+  }
+
+  // Проверяем, есть ли декоративные элементы для данного типа колес
+  const wheelConfig = CONFIG.wheel[wheelType];
+  if (!wheelConfig.decoration || wheelConfig.decoration.length === 0) {
+    logDebug('No decorations defined for wheel type:', wheelType);
+    return;
+  }
+
+  logDebug('Creating decorations for vehicle type:', vehicleType, 'and wheel type:', wheelType);
+
+  // Получаем размеры транспорта
+  const vehicleConfig = CONFIG.vehicle[vehicleType];
+  const vehicleWidth = vehicleConfig.width / vehicleConfig.scale;
+  const vehicleHeight = vehicleConfig.height / vehicleConfig.scale;
+
+  // Очищаем предыдущие декорации, если они были
+  if (decorationsRef.current.length > 0) {
+    logDebug('Cleaning up previous decorations');
+    
+    // Удаляем соединения
+    decorationJointsRef.current.forEach((joint, index) => {
+      logDebug(`Destroying decoration joint ${index}`);
+      world.destroyJoint(joint);
+    });
+    
+    // Удаляем тела декораций
+    decorationsRef.current.forEach((decoration, index) => {
+      logDebug(`Destroying decoration ${index}`);
+      world.destroyBody(decoration);
+    });
+    
+    // Очищаем массивы
+    decorationJointsRef.current = [];
+    decorationsRef.current = [];
+  }
+
+  // Создаем новые декорации
+  wheelConfig.decoration.forEach((item, index) => {
+    // Пропускаем элементы с пустым путем к изображению или нулевыми размерами
+    if (!item.image || item.w <= 0 || item.h <= 0) {
+      return;
+    }
+
+    logDebug(`Creating decoration ${index} with image: ${item.image}`);
+
+    // Вычисляем абсолютную позицию декорации относительно центра транспорта
+    const posX = vehicleBodyRef.current!.getPosition().x + (item.x * vehicleWidth);
+    const posY = vehicleBodyRef.current!.getPosition().y + (item.y * vehicleHeight);
+
+    // Создаем тело для декорации
+    const decorationBody = world.createBody({
+      type: 'dynamic',
+      position: planck.Vec2(posX, posY),
+      angle: item.angle || 0,
+    });
+
+    // Создаем форму для декорации (прямоугольник)
+    const decorationShape = planck.Box(item.w / 2, item.h / 2);
+
+    // Добавляем фикстуру к телу
+    decorationBody.createFixture({
+      shape: decorationShape,
+      density: 0.1, // Низкая плотность, чтобы не влиять на физику
+      friction: 0.1,
+      restitution: 0.1,
+      isSensor: true, // Делаем сенсором, чтобы не влиять на коллизии
+    });
+
+    // Добавляем декорацию в список
+    decorationsRef.current.push(decorationBody);
+
+    // Создаем жесткое соединение между транспортом и декорацией
+    try {
+      const joint = planck.WeldJoint(
+        {},
+        vehicleBodyRef.current!,
+        decorationBody,
+        decorationBody.getPosition()
+      );
+
+      // Добавляем соединение в мир
+      const createdJoint = world.createJoint(joint);
+      if (createdJoint) {
+        decorationJointsRef.current.push(createdJoint);
+        logDebug(`Decoration joint ${index} created successfully`);
+      } else {
+        logError(`Failed to create joint for decoration ${index}`);
+      }
+    } catch (e) {
+      logError(`Error creating joint for decoration ${index}:`, e);
+    }
+
+    logDebug(`Decoration ${index} created at position:`, decorationBody.getPosition());
+  });
+
+  logDebug('Total decorations created:', decorationsRef.current.length);
+  logDebug('Total decoration joints created:', decorationJointsRef.current.length);
+};

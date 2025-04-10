@@ -2,7 +2,7 @@ import { useState, type FC } from 'react';
 import { SwitcheBtn } from 'shared/buttons/ui/SwitcheBtn';
 
 interface IProps {
-  switchTransport: () => void;
+  switchTransport: (transport: 'normal-car' | 'truck-caterpillar') => void;
   switchTerrain?: () => void;
 }
 
@@ -15,11 +15,11 @@ export const TractorController: FC<IProps> = ({
 
   const handleTakeWheel1 = () => {
     setActive1(true);
-    switchTransport();
+    switchTransport('normal-car');
   };
   const handleTakeWheel2 = () => {
     setActive1(false);
-    switchTransport();
+    switchTransport('truck-caterpillar');
   };
 
   const handleTakeEdge1 = () => setActive2(true);

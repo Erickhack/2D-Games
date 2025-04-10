@@ -3,6 +3,30 @@ type VehicleType = 'car' | 'truck';
 type WheelType = 'normal' | 'caterpillar';
 type TerrainType = 'asphalt' | 'sand';
 
+// Добавляем тип для декоративных элементов
+type DecorationItem = {
+  x: number; // позиция x относительно центра транспорта
+  y: number; // позиция y относительно центра транспорта
+  w: number; // ширина
+  h: number; // высота
+  image: string; // путь к изображению
+  angle?: number; // опциональный угол поворота (в радианах)
+};
+
+// Обновляем существующие типы
+type WheelConfig = {
+  radius: number;
+  scale: number;
+  density: number;
+  friction: number;
+  restitution: number;
+  positions: { x: number; y: number }[];
+  motorTorque: number;
+  motorSpeed: number;
+  imagePath: string;
+  decoration?: DecorationItem[]; // Добавляем опциональное поле для декораций
+};
+
 export type { VehicleType, TerrainType, WheelType };
 
 // Конфигурация симуляции - все настройки в одном месте
@@ -60,6 +84,7 @@ export const CONFIG = {
       motorTorque: 150.0, // Увеличиваем крутящий момент для лучшего движения
       motorSpeed: 3.0, // Увеличиваем скорость вращения
       imagePath: 'tractor/images/normal-wheel.png',
+      decoration: [],
     },
     caterpillar: {
       radius: 44,
@@ -69,14 +94,24 @@ export const CONFIG = {
       restitution: 0.05,
       // Позиции колес относительно центра транспорта (в долях от размера транспорта)
       positions: [
-        { x: -1.05 / 3, y: 1.2 / 2 }, // Левое колесо
-        { x: -0.35 / 3, y: 1.2 / 2 }, // Правое колесо
-        { x: 0.4 / 3, y: 1.2 / 2 }, // Правое колесо
-        { x: 1.1 / 3, y: 1.2 / 2 }, // Правое колесо
+        { x: -1.45 / 4, y: 1.2 / 2 }, // Левое колесо
+        { x: -0.45 / 4, y: 1.2 / 2 }, // Правое колесо
+        { x: 0.45 / 4, y: 1.2 / 2 }, // Правое колесо
+        { x: 1.45 / 4, y: 1.2 / 2 }, // Правое колесо
       ],
       motorTorque: 200.0, // Еще больше крутящий момент для гусениц
       motorSpeed: 25.0, // Быстрее, чем было
-      imagePath: 'tractor/images/track-wheel.png',
+      imagePath: 'tractor/images/caterpillar-wheel.png',
+      decoration: [
+        {
+          x: 0,
+          y: 1.2 / 2,
+          w: 429,
+          h: 91,
+          image: 'tractor/images/track-wheel.png',
+          angle: 0,
+        },
+      ],
     },
   },
 

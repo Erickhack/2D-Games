@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, type RefObject } from 'react';
 import * as planck from 'planck-js';
 import {
   CONFIG,
@@ -7,9 +7,15 @@ import {
   type TerrainType,
 } from '../model';
 import { TractorController } from './TractorController';
-import { createTerrain, createVehicle, createWheels } from '../lib/create';
+import {
+  createDecorations,
+  createTerrain,
+  createVehicle,
+  createWheels,
+} from '../lib/create';
 import {
   renderDebugInfo,
+  renderDecorations,
   renderTerrain,
   renderVehicle,
   renderWheels,
@@ -17,7 +23,9 @@ import {
 import { Left } from 'shared/svgs/ui/arrows/chevron/Left';
 import { Right } from 'shared/svgs/ui/arrows/chevron/Right';
 
-interface Tractor {}
+interface Tractor {
+  restoreRef: RefObject<(() => void | null) | null>;
+}
 
 // Логирование
 export const logDebug = (message: string, ...args: any[]) => {
@@ -42,10 +50,12 @@ const Tractor: React.FC<Tractor> = () => {
   const requestRef = useRef<number>(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const imagesRef = useRef<Record<string, HTMLImageElement>>({});
+  const decorationsRef = useRef<planck.Body[]>([]);
+  const decorationJointsRef = useRef<planck.Joint[]>([]);
 
-  const switchTransport = () => {
-    setVehicleType((prev) => (prev === 'car' ? 'truck' : 'car'));
-    setWheelType((prev) => (prev === 'normal' ? 'caterpillar' : 'normal'));
+  const switchTransport = (transport: 'normal-car' | 'truck-caterpillar') => {
+    setVehicleType(transport === 'normal-car' ? 'car' : 'truck');
+    setWheelType(transport === 'normal-car' ? 'normal' : 'caterpillar');
   };
 
   // Загрузка изображений
@@ -62,6 +72,16 @@ const Tractor: React.FC<Tractor> = () => {
       { key: 'wheel', path: CONFIG.wheel[wheelType].imagePath },
       { key: 'background', path: CONFIG.canvas.backgroundImage },
     ];
+
+    // Добавляем загрузку изображений для декоративных элементов
+    const wheelConfig = CONFIG.wheel[wheelType];
+    if (wheelConfig.decoration && wheelConfig.decoration.length > 0) {
+      wheelConfig.decoration.forEach((item, index) => {
+        if (item.image) {
+          imagesToLoad.push({ key: `decoration_${index}`, path: item.image });
+        }
+      });
+    }
 
     let loadedCount = 0;
 
@@ -125,11 +145,24 @@ const Tractor: React.FC<Tractor> = () => {
         worldRef.current!.destroyBody(vehicleBodyRef.current);
       }
 
+      // Добавляем очистку декоративных элементов
+      decorationJointsRef.current.forEach((joint, index) => {
+        logDebug(`Destroying decoration joint ${index}`);
+        worldRef.current!.destroyJoint(joint);
+      });
+
+      decorationsRef.current.forEach((decoration, index) => {
+        logDebug(`Destroying decoration ${index}`);
+        worldRef.current!.destroyBody(decoration);
+      });
+
       // Очищаем массивы
       jointsRef.current = [];
       motorJointsRef.current = [];
       wheelsRef.current = [];
       vehicleBodyRef.current = null;
+      decorationJointsRef.current = [];
+      decorationsRef.current = [];
     }
 
     // Создаем мир
@@ -156,6 +189,16 @@ const Tractor: React.FC<Tractor> = () => {
       motorJointsRef,
     );
 
+    // Создаем декоративные элементы
+    createDecorations(
+      world,
+      vehicleType,
+      wheelType,
+      vehicleBodyRef,
+      decorationsRef,
+      decorationJointsRef,
+    );
+
     // Запускаем анимацию
     startSimulation();
 
@@ -178,11 +221,22 @@ const Tractor: React.FC<Tractor> = () => {
         world.destroyBody(wheel);
       });
 
+      // Добавляем очистку декоративных элементов
+      decorationJointsRef.current.forEach((joint) => {
+        world.destroyJoint(joint);
+      });
+
+      decorationsRef.current.forEach((decoration) => {
+        world.destroyBody(decoration);
+      });
+
       // Очищаем массивы соединений
       jointsRef.current = [];
       motorJointsRef.current = [];
       wheelsRef.current = [];
       vehicleBodyRef.current = null;
+      decorationJointsRef.current = [];
+      decorationsRef.current = [];
     };
   }, [imagesLoaded, vehicleType, wheelType]);
 
@@ -278,6 +332,9 @@ const Tractor: React.FC<Tractor> = () => {
 
     // Отрисовка транспорта
     renderVehicle(ctx, vehicleType, vehicleBodyRef, imagesRef);
+
+    // Добавьте эту строку для отрисовки декоративных элементов
+    renderDecorations(ctx, wheelType, imagesRef, decorationsRef);
 
     // Отрисовка колес
     renderWheels(ctx, wheelType, imagesRef, wheelsRef);

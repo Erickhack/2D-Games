@@ -103,3 +103,47 @@ export const renderDebugInfo = (
   ctx.fillText(speed, 246, CONFIG.canvas.height - 59);
   ctx.fillText(vehicle, 246, CONFIG.canvas.height - 25);
 };
+
+// Отрисовка декоративных элементов
+export const renderDecorations = (
+  ctx: CanvasRenderingContext2D,
+  wheelType: WheelType,
+  imagesRef: RefObject<Record<string, HTMLImageElement>>,
+  decorationsRef: RefObject<planck.Body[]>,
+) => {
+  // Проверяем, есть ли декоративные элементы для данного типа колес
+  const wheelConfig = CONFIG.wheel[wheelType];
+  if (!wheelConfig.decoration || wheelConfig.decoration.length === 0) {
+    return;
+  }
+
+  // Проверяем, есть ли созданные тела декораций
+  if (!decorationsRef.current || decorationsRef.current.length === 0) {
+    return;
+  }
+
+  // Отрисовываем каждую декорацию
+  decorationsRef.current.forEach((decorationBody, index) => {
+    const decoration = wheelConfig.decoration![index];
+
+    // Пропускаем, если изображение не загружено
+    if (!imagesRef.current[`decoration_${index}`]) {
+      return;
+    }
+
+    const pos = decorationBody.getPosition();
+    const angle = decorationBody.getAngle();
+
+    ctx.save();
+    ctx.translate(pos.x, pos.y);
+    ctx.rotate(angle);
+    ctx.drawImage(
+      imagesRef.current[`decoration_${index}`],
+      -decoration.w / 2,
+      -decoration.h / 2,
+      decoration.w,
+      decoration.h,
+    );
+    ctx.restore();
+  });
+};

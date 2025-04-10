@@ -39,7 +39,7 @@ export const Simulation = (props: IProps) => {
       {props.simulation === 'puzl' ? (
         <Puzl restoreRef={restoreRef} />
       ) : (
-        <Tractor />
+        <Tractor restoreRef={restoreRef} />
       )}
     </div>
   );
