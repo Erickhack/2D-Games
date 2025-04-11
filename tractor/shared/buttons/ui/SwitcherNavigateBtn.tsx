@@ -9,12 +9,12 @@ export const SwitcherNavigateBtn = () => {
 
   const handleHistoryBtn = () => {
     setActive('history');
-    navigation('history');
+    navigation('/history');
   };
 
   const handleSimulationBtn = () => {
     setActive('simulation');
-    navigation('simulation');
+    navigation('/simulation');
   };
 
   useEffect(() => {

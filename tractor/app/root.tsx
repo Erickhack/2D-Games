@@ -36,12 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <Header />
         {children}
-        <div className="fixed right-1/3 bottom-10 left-1/3 flex justify-center">
-          <SwitcherNavigateBtn />
-        </div>
-        <Footer />
         <ScrollRestoration />
         <Scripts />
       </body>
