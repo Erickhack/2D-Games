@@ -16,6 +16,7 @@ import {
 import {
   renderDebugInfo,
   renderDecorations,
+  renderSand,
   renderTerrain,
   renderVehicle,
   renderWheels,
@@ -56,6 +57,10 @@ const Tractor: React.FC<Tractor> = () => {
   const switchTransport = (transport: 'normal-car' | 'truck-caterpillar') => {
     setVehicleType(transport === 'normal-car' ? 'car' : 'truck');
     setWheelType(transport === 'normal-car' ? 'normal' : 'caterpillar');
+  };
+
+  const switchTerrain = (terrain: boolean) => {
+    setTerrainType(terrain ? 'asphalt' : 'sand');
   };
 
   // Загрузка изображений
@@ -238,7 +243,7 @@ const Tractor: React.FC<Tractor> = () => {
       decorationJointsRef.current = [];
       decorationsRef.current = [];
     };
-  }, [imagesLoaded, vehicleType, wheelType]);
+  }, [imagesLoaded, vehicleType, wheelType, terrainType]);
 
   // Запуск симуляции
   const startSimulation = () => {
@@ -308,7 +313,8 @@ const Tractor: React.FC<Tractor> = () => {
 
   // Отрисовка
   const render = () => {
-    if (!canvasRef.current || !vehicleBodyRef.current) return;
+    if (!canvasRef.current || !vehicleBodyRef.current || !worldRef.current)
+      return;
 
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
@@ -330,10 +336,13 @@ const Tractor: React.FC<Tractor> = () => {
     // Отрисовка поверхностей
     renderTerrain(ctx);
 
+    // Отрисовка песка
+    terrainType === 'sand' && renderSand(ctx, worldRef.current);
+
     // Отрисовка транспорта
     renderVehicle(ctx, vehicleType, vehicleBodyRef, imagesRef);
 
-    // Добавьте эту строку для отрисовки декоративных элементов
+    // Отрисовка декораций
     renderDecorations(ctx, wheelType, imagesRef, decorationsRef);
 
     // Отрисовка колес
@@ -448,7 +457,10 @@ const Tractor: React.FC<Tractor> = () => {
         className="relative"
         style={{ width: CONFIG.canvas.width, height: CONFIG.canvas.height }}
       >
-        <TractorController switchTransport={switchTransport} />
+        <TractorController
+          switchTransport={switchTransport}
+          switchTerrain={switchTerrain}
+        />
 
         <div className="absolute right-8 bottom-6 flex gap-4">
           <div className="flex h-[82px] w-[82px] flex-col items-center justify-center rounded-[17.18px] border-2 border-[#FFFFFF33] bg-[##FFFFFF33] backdrop-blur-[2px]">

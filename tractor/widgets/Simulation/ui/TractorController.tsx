@@ -3,7 +3,7 @@ import { SwitcheBtn } from 'shared/buttons/ui/SwitcheBtn';
 
 interface IProps {
   switchTransport: (transport: 'normal-car' | 'truck-caterpillar') => void;
-  switchTerrain?: () => void;
+  switchTerrain: (terrain: boolean) => void;
 }
 
 export const TractorController: FC<IProps> = ({
@@ -22,8 +22,14 @@ export const TractorController: FC<IProps> = ({
     switchTransport('truck-caterpillar');
   };
 
-  const handleTakeEdge1 = () => setActive2(true);
-  const handleTakeEdge2 = () => setActive2(false);
+  const handleTakeEdge1 = () => {
+    setActive2(true);
+    switchTerrain(true);
+  };
+  const handleTakeEdge2 = () => {
+    setActive2(false);
+    switchTerrain(false);
+  };
 
   return (
     <div className="absolute top-9 left-8 flex gap-5">

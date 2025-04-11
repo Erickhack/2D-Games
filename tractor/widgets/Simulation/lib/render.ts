@@ -147,3 +147,38 @@ export const renderDecorations = (
     ctx.restore();
   });
 };
+
+// Отрисовка песка
+export const renderSand = (
+  ctx: CanvasRenderingContext2D,
+  world: planck.World,
+) => {
+  const sandConfig = CONFIG.terrain.sand;
+
+  // Устанавливаем стиль для песка
+  ctx.fillStyle = sandConfig.color;
+
+  // Проходим по всем телам в мире
+  for (let body = world.getBodyList(); body; body = body.getNext()) {
+    // Проверяем, является ли тело частицей песка
+    const userData = body.getUserData() as any;
+    if (userData && userData?.type === 'sand') {
+      const pos = body.getPosition();
+
+      // Получаем фикстуру (у частицы песка только одна фикстура)
+      const fixture = body.getFixtureList();
+      if (fixture) {
+        const shape = fixture.getShape();
+        // Проверяем, что форма - круг
+        if (shape.getType() === 'circle') {
+          const radius = shape.getRadius();
+
+          // Отрисовываем частицу песка
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+  }
+};

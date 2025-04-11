@@ -22,8 +22,14 @@ export const createTerrain = (world: planck.World) => {
   asphaltBody.createFixture({
     shape: asphaltShape,
     friction: CONFIG.terrain.asphalt.friction,
+    // Фильтр категорий для оптимизации коллизий
+    filterCategoryBits: 0x0001, // Категория для асфальта
+    filterMaskBits: 0xFFFF,     // Сталкивается со всеми категориями
   });
   logDebug('Asphalt created at position:', asphaltBody.getPosition());
+  
+  // Создаем песок
+  createSand(world);
 };
 
 // Создание транспортного средства
@@ -242,7 +248,12 @@ export const createDecorations = (
     return;
   }
 
-  logDebug('Creating decorations for vehicle type:', vehicleType, 'and wheel type:', wheelType);
+  logDebug(
+    'Creating decorations for vehicle type:',
+    vehicleType,
+    'and wheel type:',
+    wheelType,
+  );
 
   // Получаем размеры транспорта
   const vehicleConfig = CONFIG.vehicle[vehicleType];
@@ -252,19 +263,19 @@ export const createDecorations = (
   // Очищаем предыдущие декорации, если они были
   if (decorationsRef.current.length > 0) {
     logDebug('Cleaning up previous decorations');
-    
+
     // Удаляем соединения
     decorationJointsRef.current.forEach((joint, index) => {
       logDebug(`Destroying decoration joint ${index}`);
       world.destroyJoint(joint);
     });
-    
+
     // Удаляем тела декораций
     decorationsRef.current.forEach((decoration, index) => {
       logDebug(`Destroying decoration ${index}`);
       world.destroyBody(decoration);
     });
-    
+
     // Очищаем массивы
     decorationJointsRef.current = [];
     decorationsRef.current = [];
@@ -280,8 +291,10 @@ export const createDecorations = (
     logDebug(`Creating decoration ${index} with image: ${item.image}`);
 
     // Вычисляем абсолютную позицию декорации относительно центра транспорта
-    const posX = vehicleBodyRef.current!.getPosition().x + (item.x * vehicleWidth);
-    const posY = vehicleBodyRef.current!.getPosition().y + (item.y * vehicleHeight);
+    const posX =
+      vehicleBodyRef.current!.getPosition().x + item.x * vehicleWidth;
+    const posY =
+      vehicleBodyRef.current!.getPosition().y + item.y * vehicleHeight;
 
     // Создаем тело для декорации
     const decorationBody = world.createBody({
@@ -311,7 +324,7 @@ export const createDecorations = (
         {},
         vehicleBodyRef.current!,
         decorationBody,
-        decorationBody.getPosition()
+        decorationBody.getPosition(),
       );
 
       // Добавляем соединение в мир
@@ -326,9 +339,66 @@ export const createDecorations = (
       logError(`Error creating joint for decoration ${index}:`, e);
     }
 
-    logDebug(`Decoration ${index} created at position:`, decorationBody.getPosition());
+    logDebug(
+      `Decoration ${index} created at position:`,
+      decorationBody.getPosition(),
+    );
   });
 
   logDebug('Total decorations created:', decorationsRef.current.length);
-  logDebug('Total decoration joints created:', decorationJointsRef.current.length);
+  logDebug(
+    'Total decoration joints created:',
+    decorationJointsRef.current.length,
+  );
+};
+
+// Создание частиц песка
+export const createSand = (world: planck.World) => {
+  const sandConfig = CONFIG.terrain.sand;
+
+  logDebug('Creating sand particles');
+
+  // Определяем область для размещения песка
+  const startX = sandConfig.positionX;
+  const endX = startX + sandConfig.width;
+  const startY = sandConfig.positionY;
+  const endY = startY + sandConfig.depth;
+
+  // Создаем частицы песка
+  for (let i = 0; i < sandConfig.particleCount; i++) {
+    // Случайная позиция в пределах области
+    const x = startX + Math.random() * sandConfig.width;
+    const y = startY + Math.random() * sandConfig.depth;
+
+    // Случайный радиус (для разнообразия)
+    const radius = sandConfig.particleRadius * (0.8 + Math.random() * 0.4);
+
+    // Создаем тело для частицы
+    const sandParticle = world.createBody({
+      type: 'dynamic',
+      position: planck.Vec2(x, y),
+      // Добавляем небольшое затухание для более реалистичного поведения
+      linearDamping: 0.5,
+      angularDamping: 0.5,
+    });
+
+    // Создаем форму для частицы (круг)
+    const sandShape = planck.Circle(radius);
+
+    // Добавляем фикстуру к частице
+    sandParticle.createFixture({
+      shape: sandShape,
+      density: sandConfig.density,
+      friction: sandConfig.friction,
+      restitution: sandConfig.restitution,
+      // Фильтр категорий для оптимизации коллизий
+      filterCategoryBits: 0x0002, // Категория для песка
+      filterMaskBits: 0xffff, // Сталкивается со всеми категориями
+    });
+
+    // Устанавливаем пользовательские данные для идентификации частиц песка
+    sandParticle.setUserData({ type: 'sand' });
+  }
+
+  logDebug(`Created ${sandConfig.particleCount} sand particles`);
 };
