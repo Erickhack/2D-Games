@@ -7,6 +7,7 @@ interface IProps {
     img: string;
     title: string;
     description: string;
+    link: string;
   }[][];
 }
 
@@ -16,6 +17,7 @@ interface IParts {
     img: string;
     title: string;
     description: string;
+    link: string;
   }[];
 }
 
@@ -38,7 +40,7 @@ const PartCards = (props: IParts) => {
         >
           <div className="flex items-center justify-between">
             <img src={card.img} width={44} height={44} />
-            <Link to={'/history'} className="text-[#047EFD]">
+            <Link to={card.link} className="text-[#047EFD]">
               Читать
             </Link>
           </div>

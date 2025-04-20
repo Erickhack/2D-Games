@@ -9,12 +9,12 @@ export const SwitcherNavigateBtn = () => {
 
   const handleHistoryBtn = () => {
     setActive('history');
-    navigation('/history');
+    navigation(('/' + url?.pathname.split('/').at(-2) || '') + '/history');
   };
 
   const handleSimulationBtn = () => {
     setActive('simulation');
-    navigation('/simulation');
+    navigation(('/' + url?.pathname.split('/').at(-2) || '') + '/simulation');
   };
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export const SwitcherNavigateBtn = () => {
   }, []);
 
   useEffect(() => {
-    if (url) setActive(url.pathname.split('/')[1]);
+    if (url) setActive(url.pathname.split('/').at(-1) || '');
   }, [url]);
 
   return (

@@ -35,7 +35,7 @@ export const CONFIG = {
   canvas: {
     width: 1400,
     height: 706,
-    backgroundImage: 'tractor/images/background.png', // Добавляем путь к фону здесь
+    backgroundImage: '/tractor/images/background.png', // Добавляем путь к фону здесь
   },
   physics: {
     gravity: 97,
@@ -54,7 +54,7 @@ export const CONFIG = {
       friction: 0.3,
       restitution: 0.2, // Упругость
       position: { x: 1 / 4, y: 1 / 2 }, // Доля от размеров холста
-      imagePath: 'tractor/images/car-body.png',
+      imagePath: '/tractor/images/car-body.png',
     },
     truck: {
       width: 457,
@@ -64,7 +64,7 @@ export const CONFIG = {
       friction: 0.4,
       restitution: 0.1,
       position: { x: 1 / 4, y: 1 / 2 },
-      imagePath: 'tractor/images/track-vehicle.png',
+      imagePath: '/tractor/images/track-vehicle.png',
     },
   },
 
@@ -84,7 +84,7 @@ export const CONFIG = {
       ],
       motorTorque: 150.0, // Увеличиваем крутящий момент для лучшего движения
       motorSpeed: 3.0, // Увеличиваем скорость вращения
-      imagePath: 'tractor/images/normal-wheel.png',
+      imagePath: '/tractor/images/normal-wheel.png',
       decoration: [],
     },
     caterpillar: {
@@ -103,14 +103,14 @@ export const CONFIG = {
       ],
       motorTorque: 200.0, // Еще больше крутящий момент для гусениц
       motorSpeed: 25.0, // Быстрее, чем было
-      imagePath: 'tractor/images/caterpillar-wheel.png',
+      imagePath: '/tractor/images/caterpillar-wheel.png',
       decoration: [
         {
           x: 0,
           y: 1.2 / 2,
           w: 429,
           h: 91,
-          image: 'tractor/images/track-wheel.png',
+          image: '/tractor/images/track-wheel.png',
           angle: 0,
         },
       ],

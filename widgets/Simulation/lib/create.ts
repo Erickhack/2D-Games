@@ -1,10 +1,18 @@
 import type { RefObject } from 'react';
-import { CONFIG, type VehicleType, type WheelType } from '../model';
+import {
+  CONFIG,
+  type TerrainType,
+  type VehicleType,
+  type WheelType,
+} from '../model';
 import { logDebug, logError } from '../ui/tractor';
 import * as planck from 'planck-js';
 
 // Создание поверхностей
-export const createTerrain = (world: planck.World) => {
+export const createTerrain = (
+  world: planck.World,
+  terrainType: TerrainType,
+) => {
   const canvasWidth = CONFIG.canvas.width;
 
   logDebug('Creating terrain');
@@ -24,12 +32,12 @@ export const createTerrain = (world: planck.World) => {
     friction: CONFIG.terrain.asphalt.friction,
     // Фильтр категорий для оптимизации коллизий
     filterCategoryBits: 0x0001, // Категория для асфальта
-    filterMaskBits: 0xFFFF,     // Сталкивается со всеми категориями
+    filterMaskBits: 0xffff, // Сталкивается со всеми категориями
   });
   logDebug('Asphalt created at position:', asphaltBody.getPosition());
-  
+
   // Создаем песок
-  createSand(world);
+  terrainType === 'sand' && createSand(world);
 };
 
 // Создание транспортного средства

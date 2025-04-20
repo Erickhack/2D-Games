@@ -62,7 +62,7 @@ export const Puzl = (props: IProps) => {
   const createInitialPieces = (): PuzzlePiece[] => {
     return PIECE_SIZES.map((size, index) => ({
       id: index + 1,
-      src: `puzl/pieces/piece${index + 1}.svg`,
+      src: `/puzl/pieces/piece${index + 1}.svg`,
       correctX: CORRECT_POSITIONS[index].x,
       correctY: CORRECT_POSITIONS[index].y,
       x: 0,
@@ -441,7 +441,7 @@ export const Puzl = (props: IProps) => {
           top: piece.correctY - piece.height / 2,
           width: piece.width,
           height: piece.height,
-          backgroundImage: `url(puzl/hints/piece${piece.id}.svg)`,
+          backgroundImage: `url(/puzl/hints/piece${piece.id}.svg)`,
           backgroundSize: 'contain',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -593,7 +593,7 @@ export const Puzl = (props: IProps) => {
         {/* Фоновое изображение */}
         <div
           className="absolute h-full w-full bg-contain bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url(puzl/backgrounds/cols_rows.png)' }}
+          style={{ backgroundImage: 'url(/puzl/backgrounds/cols_rows.png)' }}
         />
 
         <div className="absolute top-6 left-8 rounded-[6px] bg-white px-4 py-1.5">

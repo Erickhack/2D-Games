@@ -178,7 +178,7 @@ const Tractor: React.FC<Tractor> = () => {
     logDebug('World created with gravity:', CONFIG.physics.gravity);
 
     // Создаем поверхности
-    createTerrain(world);
+    createTerrain(world, terrainType);
 
     // Создаем тело транспорта
     createVehicle(world, vehicleType, vehicleBodyRef);
