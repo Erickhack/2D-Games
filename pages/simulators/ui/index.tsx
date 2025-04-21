@@ -4,7 +4,15 @@ import {
   descriptoinOfSimulation2,
 } from '../model/texts';
 
-export default function SimulationPage() {
+interface IProps {
+  puzlSourcePath: string;
+  PIECE_SIZES: { width: number; height: number }[];
+  CORRECT_POSITIONS: { x: number; y: number }[];
+}
+
+export default function SimulationPage(props: IProps) {
+  console.log('BIG TEST puzlSourcePath', props.puzlSourcePath);
+
   return (
     <main className="flex flex-col justify-center gap-11 p-5 pt-16 pb-4">
       <section>
@@ -12,6 +20,9 @@ export default function SimulationPage() {
           title="1. Пазл"
           description={descriptoinOfSimulation1}
           simulation="puzl"
+          puzlPathPage={props.puzlSourcePath}
+          CORRECT_POSITIONS={props.CORRECT_POSITIONS}
+          PIECE_SIZES={props.PIECE_SIZES}
         />
       </section>
       <section>

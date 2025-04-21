@@ -4,11 +4,25 @@ import { Puzl } from './puzl';
 import { useRef } from 'react';
 import Tractor from './tractor';
 
-interface IProps {
+interface BaseProps {
   title: string;
   description: string;
   simulation: 'puzl' | 'tractor';
 }
+
+interface PuzlProps extends BaseProps {
+  simulation: 'puzl';
+  puzlPathPage: string;
+  PIECE_SIZES: { width: number; height: number }[];
+  CORRECT_POSITIONS: { x: number; y: number }[];
+}
+
+interface TractorProps extends BaseProps {
+  simulation: 'tractor';
+  puzlPathPage?: undefined; // можно не указывать вообще
+}
+
+type IProps = PuzlProps | TractorProps;
 
 export const Simulation = (props: IProps) => {
   const restoreRef = useRef<() => void | null>(null);
@@ -37,7 +51,12 @@ export const Simulation = (props: IProps) => {
       </div>
 
       {props.simulation === 'puzl' ? (
-        <Puzl restoreRef={restoreRef} />
+        <Puzl
+          restoreRef={restoreRef}
+          pagePath={props.puzlPathPage}
+          CORRECT_POSITIONS={props.CORRECT_POSITIONS}
+          PIECE_SIZES={props.PIECE_SIZES}
+        />
       ) : (
         <Tractor restoreRef={restoreRef} />
       )}

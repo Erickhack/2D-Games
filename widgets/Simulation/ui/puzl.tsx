@@ -35,34 +35,25 @@ const HINT_DURATION = 3000;
 const SWIPER_HEIGHT = CANVAS_HEIGHT / 1.2;
 const SWIPER_Y_POSITION = 50;
 
-// Правильные позиции для кусочков пазла
-const CORRECT_POSITIONS = [
-  { x: 600, y: 510 },
-  { x: 665, y: 326 },
-  { x: 465, y: 336 },
-  { x: 600, y: 430 },
-  { x: 869, y: 480 },
-];
-
-// Размеры кусочков пазла
-const PIECE_SIZES = [
-  { width: 500, height: 106 },
-  { width: 288, height: 215 },
-  { width: 123, height: 145 },
-  { width: 532, height: 89 },
-  { width: 31, height: 104 },
-];
-
 interface IProps {
   restoreRef: RefObject<(() => void | null) | null>;
+  pagePath: string;
+
+  PIECE_SIZES: { width: number; height: number }[];
+  CORRECT_POSITIONS: { x: number; y: number }[];
 }
 
-export const Puzl = (props: IProps) => {
+export const Puzl = ({
+  pagePath,
+  restoreRef,
+  CORRECT_POSITIONS,
+  PIECE_SIZES,
+}: IProps) => {
   // Создаем начальное состояние кусочков пазла
   const createInitialPieces = (): PuzzlePiece[] => {
     return PIECE_SIZES.map((size, index) => ({
       id: index + 1,
-      src: `/puzl/pieces/piece${index + 1}.svg`,
+      src: `/puzl/pieces/${pagePath}/piece${index + 1}.svg`,
       correctX: CORRECT_POSITIONS[index].x,
       correctY: CORRECT_POSITIONS[index].y,
       x: 0,
@@ -93,7 +84,7 @@ export const Puzl = (props: IProps) => {
   // Инициализация физического мира
   useEffect(() => {
     initPhysicsWorld();
-    props.restoreRef.current = resetPuzzle;
+    restoreRef.current = resetPuzzle;
     return cleanupPhysicsWorld;
   }, []);
 
@@ -433,15 +424,13 @@ export const Puzl = (props: IProps) => {
     return (
       <div
         key={`hint-${piece.id}`}
-        className={`absolute cursor-pointer ${
-          activeHint === piece.id ? 'opacity-70' : 'opacity-30'
-        }`}
+        className={`absolute cursor-pointer ${activeHint === piece.id ? 'opacity-70' : 'opacity-30'}`}
         style={{
           left: piece.correctX - piece.width / 2,
           top: piece.correctY - piece.height / 2,
           width: piece.width,
           height: piece.height,
-          backgroundImage: `url(/puzl/hints/piece${piece.id}.svg)`,
+          backgroundImage: `url(/puzl/hints/${pagePath}/piece${piece.id}.svg)`,
           backgroundSize: 'contain',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
