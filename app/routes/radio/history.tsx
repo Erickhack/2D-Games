@@ -1,5 +1,5 @@
-import HistoryPage from 'pages/History';
+import RadioHistoryPage from 'pages/Radio/History';
 
 export default function History() {
-  return <HistoryPage />;
+  return <RadioHistoryPage />;
 }

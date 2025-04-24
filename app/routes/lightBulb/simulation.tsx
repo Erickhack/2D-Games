@@ -1,4 +1,4 @@
-import SimulationPage from 'pages/simulators/ui';
+import { LightBulbSimulationPage } from 'pages/LightBulb/Simulators';
 
 const CORRECT_POSITIONS = [
   { x: 1400 / 2 + 141, y: 532 },
@@ -24,7 +24,7 @@ const PIECE_SIZES = [
 
 export default function Simulation() {
   return (
-    <SimulationPage
+    <LightBulbSimulationPage
       CORRECT_POSITIONS={CORRECT_POSITIONS}
       PIECE_SIZES={PIECE_SIZES}
       puzlSourcePath="light-bulb"

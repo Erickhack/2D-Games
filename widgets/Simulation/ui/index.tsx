@@ -1,13 +1,15 @@
 import Button from 'shared/buttons/ui/Button';
 import { ResetSVG } from 'shared/svgs/ui/reset';
 import { Puzl } from './puzl';
-import { useRef } from 'react';
+import { useRef, type RefObject } from 'react';
 import Tractor from './tractor';
+import { Radio } from './Radio';
+import { LightBulb } from './LightBulb';
 
 interface BaseProps {
   title: string;
   description: string;
-  simulation: 'puzl' | 'tractor';
+  simulation: 'puzl' | 'tractor' | 'radio' | 'light-bulb';
 }
 
 interface PuzlProps extends BaseProps {
@@ -19,10 +21,45 @@ interface PuzlProps extends BaseProps {
 
 interface TractorProps extends BaseProps {
   simulation: 'tractor';
-  puzlPathPage?: undefined; // можно не указывать вообще
+  puzlPathPage?: undefined;
 }
 
-type IProps = PuzlProps | TractorProps;
+interface RadioProps extends BaseProps {
+  simulation: 'radio';
+}
+
+interface LightBulbProps extends BaseProps {
+  simulation: 'light-bulb';
+}
+
+type IProps = PuzlProps | TractorProps | RadioProps | LightBulbProps;
+
+const SwitcherSimulation = ({
+  props,
+  restoreRef,
+}: {
+  props: IProps;
+  restoreRef: RefObject<(() => void | null) | null>;
+}) => {
+  switch (props.simulation) {
+    case 'puzl':
+      return (
+        <Puzl
+          restoreRef={restoreRef}
+          pagePath={props.puzlPathPage}
+          CORRECT_POSITIONS={props.CORRECT_POSITIONS}
+          PIECE_SIZES={props.PIECE_SIZES}
+        />
+      );
+    case 'tractor':
+      return <Tractor restoreRef={restoreRef} />;
+
+    case 'radio':
+      return <Radio />;
+    case 'light-bulb':
+      return <LightBulb />;
+  }
+};
 
 export const Simulation = (props: IProps) => {
   const restoreRef = useRef<() => void | null>(null);
@@ -50,16 +87,7 @@ export const Simulation = (props: IProps) => {
         </span>
       </div>
 
-      {props.simulation === 'puzl' ? (
-        <Puzl
-          restoreRef={restoreRef}
-          pagePath={props.puzlPathPage}
-          CORRECT_POSITIONS={props.CORRECT_POSITIONS}
-          PIECE_SIZES={props.PIECE_SIZES}
-        />
-      ) : (
-        <Tractor restoreRef={restoreRef} />
-      )}
+      <SwitcherSimulation props={props} restoreRef={restoreRef} />
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import RadioSimulatorsPage from 'pages/Radio/Simulators';
 import SimulationPage from 'pages/simulators/ui';
 
 const CORRECT_POSITIONS = [
@@ -20,7 +21,7 @@ const PIECE_SIZES = [
 
 export default function Simulation() {
   return (
-    <SimulationPage
+    <RadioSimulatorsPage
       CORRECT_POSITIONS={CORRECT_POSITIONS}
       PIECE_SIZES={PIECE_SIZES}
       puzlSourcePath="radio"

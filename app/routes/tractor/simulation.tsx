@@ -1,4 +1,4 @@
-import SimulationPage from 'pages/simulators/ui';
+import { TractorSimulationPage } from 'pages/Tractor/Simulators';
 
 const CORRECT_POSITIONS = [
   { x: 600, y: 510 },
@@ -18,7 +18,7 @@ const PIECE_SIZES = [
 
 export default function Simulation() {
   return (
-    <SimulationPage
+    <TractorSimulationPage
       puzlSourcePath="tractor"
       CORRECT_POSITIONS={CORRECT_POSITIONS}
       PIECE_SIZES={PIECE_SIZES}

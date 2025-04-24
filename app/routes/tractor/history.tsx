@@ -1,5 +1,5 @@
+import { TractorHistoryPage } from 'pages/Tractor/History';
 import type { Route } from '../+types/home';
-import HistoryPage from 'pages/History';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,5 +9,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function History() {
-  return <HistoryPage />;
+  return <TractorHistoryPage />;
 }

@@ -1,5 +1,5 @@
-import HistoryPage from 'pages/History';
+import LightBulbHistoryPage from 'pages/LightBulb/History';
 
 export default function History() {
-  return <HistoryPage />;
+  return <LightBulbHistoryPage />;
 }

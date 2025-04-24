@@ -485,13 +485,11 @@ export const Puzl = ({
         style={{ pointerEvents: 'auto' }}
       >
         <div
+          className="bg-contain bg-center bg-no-repeat"
           style={{
             width: piece.width * 0.4,
             height: piece.height * 0.4,
             backgroundImage: `url(${piece.src})`,
-            backgroundSize: 'contain',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
           }}
         />
       </div>
