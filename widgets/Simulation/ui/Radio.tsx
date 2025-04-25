@@ -29,6 +29,14 @@ export const Radio = () => {
   } | null>(null);
   const imagesLoadedRef = useRef(false);
   const animationFrameRef = useRef<number | null>(null);
+  
+  // Добавляем ref для отслеживания активного тюнера
+  const activeTunerRef = useRef<{
+    setAngle: React.Dispatch<React.SetStateAction<number>>,
+    x: number,
+    y: number,
+    size: number
+  } | null>(null);
 
   const [pointerPosition, setPointerPosition] = useState(500);
   const [tuner1Angle, setTuner1Angle] = useState(0);
@@ -90,8 +98,8 @@ export const Radio = () => {
     [],
   );
 
-  // Обработчик вращения тюнеров
-  const handleTunerRotation = useCallback(
+  // Обновленная функция для вращения тюнеров
+  const rotateTuner = useCallback(
     (
       e: MouseEvent,
       tunerX: number,
@@ -107,18 +115,46 @@ export const Radio = () => {
 
       const centerX = tunerX + tunerSize / 2;
       const centerY = tunerY + tunerSize / 2;
-      const distance = Math.sqrt(
-        Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2),
-      );
-
-      if (distance <= tunerSize / 2) {
-        const angle =
-          (Math.atan2(mouseY - centerY, mouseX - centerX) * 180) / Math.PI;
-        setAngle(angle + 90);
-      }
+      
+      // Вычисляем угол между центром тюнера и позицией мыши
+      // Вычитаем 90 градусов, чтобы указатель тюнера точно указывал на место клика
+      // (предполагая, что указатель на изображении тюнера направлен влево при 0 градусов)
+      const angle = Math.atan2(mouseY - centerY, mouseX - centerX) * 180 / Math.PI - 90;
+      
+      setAngle(angle);
+      
+      // Обновляем положение указателя в зависимости от тюнеров
+      updatePointerPosition();
     },
     [],
   );
+
+  // Функция для обновления положения указателя на основе тюнеров
+  const updatePointerPosition = useCallback(() => {
+    // Вычисляем среднее значение от всех трех тюнеров
+    const radioX = 191;
+    const radioWidth = 1018;
+    const minX = radioX + 100;
+    const maxX = radioX + radioWidth - 100;
+    const range = maxX - minX;
+    
+    // Нормализуем углы тюнеров в диапазон 0-1
+    const normalizeAngle = (angle: number) => {
+      let normalized = angle % 360;
+      if (normalized < 0) normalized += 360;
+      return normalized / 360;
+    };
+    
+    // Вычисляем влияние каждого тюнера
+    const tuner1Value = normalizeAngle(tuner1Angle);
+    const tuner2Value = normalizeAngle(tuner2Angle);
+    const tuner3Value = normalizeAngle(tuner3Angle);
+    
+    // Вычисляем позицию указателя как взвешенное среднее от всех тюнеров
+    const newPosition = minX + (tuner1Value * 0.4 + tuner2Value * 0.3 + tuner3Value * 0.3) * range;
+    
+    setPointerPosition(newPosition);
+  }, [tuner1Angle, tuner2Angle, tuner3Angle]);
 
   // Функция отрисовки всего содержимого
   const drawCanvas = useCallback(() => {
@@ -262,7 +298,7 @@ export const Radio = () => {
     // Запускаем отрисовку
     drawCanvas();
 
-    // Обработчик для вращения тюнеров
+    // Обработчик для начала вращения тюнеров
     const handleMouseDown = (e: MouseEvent) => {
       const tunerSize = 130;
       const radioX = 191;
@@ -281,47 +317,70 @@ export const Radio = () => {
       const tuner3X = radioX + radioWidth * 0.817 - tunerSize / 2;
       const tuner3Y = tunerY - tunerSize / 1.9;
 
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
       // Проверяем, на какой тюнер кликнули
-      handleTunerRotation(e, tuner1X, tuner1Y, tunerSize, setTuner1Angle);
-      handleTunerRotation(e, tuner2X, tuner2Y, tunerSize, setTuner2Angle);
-      handleTunerRotation(e, tuner3X, tuner3Y, tunerSize, setTuner3Angle);
+      const checkTuner = (tunerX: number, tunerY: number, setAngle: React.Dispatch<React.SetStateAction<number>>) => {
+        const centerX = tunerX + tunerSize / 2;
+        const centerY = tunerY + tunerSize / 2;
+        const distance = Math.sqrt(
+          Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2)
+        );
+        
+        if (distance <= tunerSize / 2) {
+          activeTunerRef.current = {
+            setAngle,
+            x: tunerX,
+            y: tunerY,
+            size: tunerSize
+          };
+          rotateTuner(e, tunerX, tunerY, tunerSize, setAngle);
+          return true;
+        }
+        return false;
+      };
+
+      // Проверяем тюнеры по порядку
+      if (checkTuner(tuner1X, tuner1Y, setTuner1Angle)) return;
+      if (checkTuner(tuner2X, tuner2Y, setTuner2Angle)) return;
+      if (checkTuner(tuner3X, tuner3Y, setTuner3Angle)) return;
     };
 
-    // Добавляем обработчик события
+    // Обработчик для продолжения вращения при движении мыши
+    const handleMouseMove = (e: MouseEvent) => {
+      if (activeTunerRef.current) {
+        const { setAngle, x, y, size } = activeTunerRef.current;
+        rotateTuner(e, x, y, size, setAngle);
+      }
+    };
+
+    // Обработчик для завершения вращения
+    const handleMouseUp = () => {
+      activeTunerRef.current = null;
+    };
+
+    // Добавляем обработчики событий
     canvas.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
 
     // Очистка при размонтировании
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [drawCanvas, handleTunerRotation]);
+  }, [drawCanvas, rotateTuner]);
 
   // Эффект для перерисовки при изменении состояний
   useEffect(() => {
     drawCanvas();
   }, [drawCanvas, pointerPosition, tuner1Angle, tuner2Angle, tuner3Angle]);
-
-  // Функция для перемещения указателя при клике
-  const handlePointerMove = (e: React.MouseEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-
-    // Ограничиваем движение указателя в пределах радио
-    const radioX = 191;
-    const radioWidth = 1018;
-    const minX = radioX + 100; // Минимальная позиция (левый край шкалы)
-    const maxX = radioX + radioWidth - 100; // Максимальная позиция (правый край шкалы)
-
-    if (x >= minX && x <= maxX) {
-      setPointerPosition(x);
-    }
-  };
 
   return (
     <div className="flex justify-center">
@@ -330,7 +389,6 @@ export const Radio = () => {
         height={CANVAS_HEIGHT}
         ref={canvasRef}
         className="rounded-[24px] bg-[#F0F0F0]"
-        onClick={handlePointerMove}
       />
     </div>
   );

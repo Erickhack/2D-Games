@@ -21,6 +21,7 @@ interface PuzzlePiece {
   placed: boolean;
   inSwiper: boolean;
   returning?: boolean; // Новое свойство для анимации возврата
+  scale?: number;
 }
 
 interface BodyUserData {
@@ -39,7 +40,7 @@ interface IProps {
   restoreRef: RefObject<(() => void | null) | null>;
   pagePath: string;
 
-  PIECE_SIZES: { width: number; height: number }[];
+  PIECE_SIZES: { width: number; height: number; scale?: number }[];
   CORRECT_POSITIONS: { x: number; y: number }[];
 }
 
@@ -62,6 +63,7 @@ export const Puzl = ({
       height: size.height,
       placed: false,
       inSwiper: true,
+      scale: size.scale,
     }));
   };
 
@@ -73,6 +75,17 @@ export const Puzl = ({
   const [showHints, setShowHints] = useState<boolean>(true);
   const [activeHint, setActiveHint] = useState<number | null>(null);
   const [hintsUsed, setHintsUsed] = useState<number>(0);
+  const [puzzleCompleted, setPuzzleCompleted] = useState<boolean>(false);
+  const [completionTime, setCompletionTime] = useState<number>(0);
+  const [startTime, setStartTime] = useState<number>(Date.now());
+  const [timerStarted, setTimerStarted] = useState<boolean>(false);
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
+  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(
+    null,
+  );
+
+  const [hintMessage, setHintMessage] = useState<string>('');
+  const [showHintPanel, setShowHintPanel] = useState<boolean>(false);
 
   // Refs
   const worldRef = useRef<World | null>(null);
@@ -81,12 +94,112 @@ export const Puzl = ({
   const animationRef = useRef<number | null>(null);
   const swiperRef = useRef<SwiperType | null>(null);
 
-  // Инициализация физического мира
+  // Функция для запуска таймера
+  const startTimer = () => {
+    if (timerStarted) return;
+
+    setStartTime(Date.now());
+    setTimerStarted(true);
+
+    const interval = setInterval(() => {
+      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+
+    setTimerInterval(interval);
+  };
+
+  // Функция для остановки таймера
+  const stopTimer = () => {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+  };
+
   useEffect(() => {
+    // Инициализация физического мира
     initPhysicsWorld();
+
+    // Сброс статистики
+    setCompletedCount(0);
+    setHintsUsed(0);
+    setPuzzleCompleted(false);
+    setShowHintPanel(false);
+    setTimerStarted(false);
+    setElapsedTime(0);
+
+    // Привязка функции сброса к внешнему ref
     restoreRef.current = resetPuzzle;
-    return cleanupPhysicsWorld;
+
+    // Функция очистки при размонтировании
+    return () => {
+      cleanupPhysicsWorld();
+      stopTimer();
+    };
   }, []);
+
+  useEffect(() => {
+    // Проверяем, все ли кусочки размещены
+    if (
+      completedCount === puzzlePieces.length &&
+      puzzlePieces.length > 0 &&
+      !puzzleCompleted
+    ) {
+      // Останавливаем таймер
+      stopTimer();
+
+      // Устанавливаем флаг завершения
+      setPuzzleCompleted(true);
+
+      // Небольшая задержка перед показом панели статистики для лучшего UX
+      setTimeout(() => {
+        // Показываем панель статистики
+        setHintMessage(getCompletionMessage(elapsedTime));
+        setShowHintPanel(true);
+      }, 500);
+    }
+  }, [completedCount, puzzlePieces.length, puzzleCompleted, elapsedTime]);
+
+  // Функция для форматирования времени
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  };
+
+  // Функция для получения сообщения о завершении
+  const getCompletionMessage = (timeSpent: number): string => {
+    const timeFormatted = formatTime(timeSpent);
+
+    let rating = '';
+    if (hintsUsed === 0) {
+      rating = 'Отлично! Вы справились без подсказок!';
+    } else if (hintsUsed <= 3) {
+      rating = 'Хороший результат! Вы использовали минимум подсказок.';
+    } else {
+      rating =
+        'Неплохо! В следующий раз попробуйте использовать меньше подсказок.';
+    }
+
+    return `Пазл собран! Время: ${timeFormatted}. Использовано подсказок: ${hintsUsed}. ${rating}`;
+  };
+
+  const handlePiecePlaced = (pieceId: number): void => {
+    // Запускаем таймер, если это первый размещенный кусочек
+    if (completedCount === 0) {
+      startTimer();
+    }
+
+    // Обновляем состояние кусочка
+    setPuzzlePieces((prevPieces) =>
+      prevPieces.map((piece) =>
+        piece.id === pieceId ? { ...piece, placed: true } : piece,
+      ),
+    );
+
+    // Увеличиваем счетчик завершенных кусочков
+    setCompletedCount((prev) => prev + 1);
+  };
 
   // Функция инициализации физического мира
   const initPhysicsWorld = (): void => {
@@ -383,6 +496,13 @@ export const Puzl = ({
     setCompletedCount(0);
     setHintsUsed(0);
     setActiveHint(null);
+    setPuzzleCompleted(false);
+    setShowHintPanel(false);
+
+    // Сброс таймера
+    stopTimer();
+    setTimerStarted(false);
+    setElapsedTime(0);
 
     // Удаляем все физические тела
     Object.values(bodiesRef.current).forEach((body) => {
@@ -401,20 +521,48 @@ export const Puzl = ({
     // Если подсказка уже активна для этого кусочка, скрываем ее
     if (activeHint === pieceId) {
       setActiveHint(null);
+      setShowHintPanel(false);
       return;
     }
 
     // Активируем подсказку для выбранного кусочка
     setActiveHint(pieceId);
 
+    // Находим кусочек
+    const piece = puzzlePieces.find((p) => p.id === pieceId);
+
+    if (piece) {
+      // Если кусочек в слайдере, прокручиваем слайдер к нему
+      if (piece.inSwiper && swiperRef.current) {
+        // Находим индекс слайда с этим кусочком
+        const slideIndex = swiperPieces.findIndex((p) => p.id === piece.id);
+        if (slideIndex !== -1) {
+          // Вместо простого slideTo используем более надежный метод
+          scrollToSlide(slideIndex);
+
+          // Показываем сообщение подсказки
+          setHintMessage(
+            `Найдите этот кусочек в слайдере справа и перетащите его на подсвеченное место`,
+          );
+        }
+      } else {
+        // Если кусочек уже на холсте
+        setHintMessage(`Перетащите выделенный кусочек на подсвеченное место`);
+      }
+
+      // Показываем панель подсказок
+      setShowHintPanel(true);
+    }
+
     // Увеличиваем счетчик использованных подсказок
-    if (!puzzlePieces.find((p) => p.id === pieceId)?.placed) {
+    if (!piece?.placed) {
       setHintsUsed((prev) => prev + 1);
     }
 
     // Автоматически скрываем подсказку через заданное время
     setTimeout(() => {
       setActiveHint((prev) => (prev === pieceId ? null : prev));
+      setShowHintPanel(false);
     }, HINT_DURATION);
   };
 
@@ -479,16 +627,26 @@ export const Puzl = ({
   const renderSwiperPiece = (piece: PuzzlePiece) => {
     if (!piece.inSwiper) return null;
 
+    const isHighlighted = activeHint === piece.id;
+
     return (
       <div
-        className="flex h-full cursor-grab items-center justify-center"
-        style={{ pointerEvents: 'auto' }}
+        className={`flex h-full cursor-grab items-center justify-center ${
+          isHighlighted ? 'ring-opacity-70 ring-2 ring-green-500' : ''
+        }`}
+        style={{
+          pointerEvents: 'auto',
+          transition: 'all 0.3s ease',
+          backgroundColor: isHighlighted
+            ? 'rgba(76, 175, 80, 0.2)'
+            : 'transparent',
+        }}
       >
         <div
           className="bg-contain bg-center bg-no-repeat"
           style={{
-            width: piece.width * 0.4,
-            height: piece.height * 0.4,
+            width: piece.width * (piece.scale || 0.4),
+            height: piece.height * (piece.scale || 0.4),
             backgroundImage: `url(${piece.src})`,
           }}
         />
@@ -560,6 +718,179 @@ export const Puzl = ({
     }
   };
 
+  // Добавим панель подсказок в разметку
+  const renderHintPanel = () => {
+    if (!showHintPanel) return null;
+
+    // Определяем стиль в зависимости от типа сообщения
+    const isPuzzleCompletedMessage = puzzleCompleted;
+
+    return (
+      <div
+        className={`absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-lg px-6 py-4 shadow-lg transition-all duration-300 ${
+          isPuzzleCompletedMessage
+            ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+            : 'bg-white'
+        }`}
+        style={{
+          maxWidth: isPuzzleCompletedMessage ? '80%' : '600px',
+          minWidth: isPuzzleCompletedMessage ? '600px' : 'auto',
+        }}
+      >
+        <div className="flex items-center gap-3">
+          {isPuzzleCompletedMessage && <div className="mr-2 text-2xl">🎉</div>}
+
+          <div
+            className={`text-lg font-medium ${isPuzzleCompletedMessage ? 'text-white' : 'text-[#047EFD]'}`}
+          >
+            {isPuzzleCompletedMessage ? 'Поздравляем!' : 'Подсказка:'}
+          </div>
+
+          <div
+            className={`text-base ${isPuzzleCompletedMessage ? 'text-white' : 'text-gray-800'}`}
+          >
+            {hintMessage}
+          </div>
+
+          {!isPuzzleCompletedMessage && (
+            <button
+              className="ml-4 rounded-full bg-gray-200 p-1 hover:bg-gray-300"
+              onClick={() => setShowHintPanel(false)}
+            >
+              <span className="text-sm">✕</span>
+            </button>
+          )}
+        </div>
+
+        {isPuzzleCompletedMessage && (
+          <div className="mt-4 flex justify-center gap-4">
+            <Button
+              onClick={resetPuzzle}
+              className="rounded-[6px] bg-white px-6 py-2 text-blue-500 hover:bg-gray-100"
+            >
+              Начать заново
+            </Button>
+            <Button
+              onClick={() => setShowHintPanel(false)}
+              className="rounded-[6px] border border-white bg-transparent px-6 py-2 text-white hover:bg-white/10"
+            >
+              Закрыть
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Добавим таймер для отображения текущего времени
+  const renderTimer = () => {
+    return (
+      <div className="absolute top-6 left-[200px] rounded-[6px] bg-white px-4 py-1.5">
+        <span className="text-[20px]/[130%] text-[#047EFD]">
+          Время: {timerStarted ? formatTime(elapsedTime) : '00:00'}
+        </span>
+      </div>
+    );
+  };
+
+  // Добавим кнопку подсказки в верхнюю часть canvas
+  const renderHintButton = () => (
+    <div className="absolute top-6 right-[230px] z-10">
+      <Button
+        onClick={() => {
+          // Находим первый неразмещенный кусочек
+          const unplacedPiece = puzzlePieces.find((p) => !p.placed);
+          if (unplacedPiece) {
+            showHintForPiece(unplacedPiece.id);
+          }
+        }}
+        className="rounded-[6px] bg-white px-4 py-1.5 hover:bg-gray-100"
+      >
+        <span className="text-[16px]/[130%] text-[#047EFD]">Подсказка</span>
+      </Button>
+    </div>
+  );
+
+  const scrollToSlide = (targetIndex: number) => {
+    if (!swiperRef.current) return;
+
+    const swiper = swiperRef.current;
+
+    // Получаем текущий активный индекс
+    const currentIndex = swiper.activeIndex;
+
+    // Получаем общее количество слайдов
+    const totalSlides = swiperPieces.length;
+
+    // Получаем количество видимых слайдов
+    const slidesPerView = 3; // Это значение должно соответствовать slidesPerView в Swiper
+
+    // Рассчитываем оптимальный индекс для прокрутки
+    let optimalIndex = targetIndex;
+
+    // Если целевой индекс находится в пределах текущего видимого окна, не прокручиваем
+    const isVisible =
+      targetIndex >= currentIndex && targetIndex < currentIndex + slidesPerView;
+
+    if (!isVisible) {
+      // Если целевой индекс ниже текущего видимого окна
+      if (targetIndex >= currentIndex + slidesPerView) {
+        // Прокручиваем так, чтобы целевой слайд был вверху видимой области
+        optimalIndex = Math.min(targetIndex, totalSlides - slidesPerView);
+      }
+      // Если целевой индекс выше текущего видимого окна
+      else if (targetIndex < currentIndex) {
+        // Прокручиваем так, чтобы целевой слайд был внизу видимой области
+        optimalIndex = Math.max(targetIndex - slidesPerView + 1, 0);
+      }
+    }
+
+    // Прокручиваем к оптимальному индексу
+    swiper.slideTo(optimalIndex, 300);
+
+    // Добавляем выделение для целевого слайда
+    setTimeout(() => {
+      const slides = document.querySelectorAll('.swiper-slide');
+      slides.forEach((slide, index) => {
+        if (index === targetIndex) {
+          // Используем класс из глобального CSS
+          slide.classList.add('highlight-slide');
+
+          // Удаляем класс через некоторое время
+          setTimeout(() => {
+            slide.classList.remove('highlight-slide');
+          }, HINT_DURATION - 500);
+        }
+      });
+    }, 350);
+  };
+
+  const renderStartMessage = () => {
+    if (timerStarted || completedCount > 0) return null;
+
+    return (
+      <div className="absolute top-1/2 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white/90 px-8 py-6 text-center shadow-lg">
+        <h2 className="mb-4 text-2xl font-bold text-[#047EFD]">
+          Готовы начать?
+        </h2>
+        <p className="mb-6 text-lg text-gray-700">
+          Разместите первый кусочек пазла, чтобы начать игру и запустить таймер.
+        </p>
+        <div className="flex justify-center">
+          <button
+            onClick={() => {
+              // Можно добавить опцию ручного запуска таймера
+              startTimer();
+            }}
+            className="rounded-[6px] bg-[#047EFD] px-6 py-2 text-white hover:bg-blue-600"
+          >
+            Запустить таймер сейчас
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div /* // Добавим обработчик контекстного меню для всего компонента */
       className="flex flex-col items-center justify-center pt-8 pb-4"
@@ -588,6 +919,9 @@ export const Puzl = ({
             Собрано: {completedCount}/{puzzlePieces.length}
           </span>
         </div>
+
+        {/* Добавляем кнопку подсказки */}
+        {renderHintButton()}
 
         {/* Вертикальный Swiper с кусочками пазла внутри Canvas */}
         <div
@@ -646,11 +980,20 @@ export const Puzl = ({
           )}
         </div>
 
+        {/* Добавляем таймер */}
+        {renderTimer()}
+
         {/* Отображение подсказок */}
         {showHints && puzzlePieces.map(renderHint)}
 
         {/* Кусочки пазла на canvas */}
         {puzzlePieces.map(renderPuzzlePiece)}
+
+        {/* Сообщение о начале игры */}
+        {renderStartMessage()}
+
+        {/* Панель подсказок */}
+        {renderHintPanel()}
       </div>
     </div>
   );

@@ -5,18 +5,13 @@ import { Right } from 'shared/svgs/ui/arrows/12x19/right';
 import { Left } from 'shared/svgs/ui/arrows/12x19/left';
 import { useState, useRef } from 'react';
 
-export default function AuthorCard() {
+interface IProps {
+  images: string[];
+}
+
+export default function AuthorCard(props: IProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const swiperRef = useRef<SwiperRef>(null);
-
-  // Изображения для слайдера
-  const images = [
-    '/image.png',
-    '/image.png',
-    '/image.png',
-    '/image.png',
-    '/image.png',
-  ];
 
   // Обработчик для кнопки "предыдущий слайд"
   const handlePrev = () => {
@@ -46,7 +41,7 @@ export default function AuthorCard() {
           ref={swiperRef}
           onSlideChange={handleSlideChange}
         >
-          {images.map((image, index) => (
+          {props.images.map((image, index) => (
             <SwiperSlide key={index}>
               <img src={image} alt={`Slide ${index + 1}`} />
             </SwiperSlide>
@@ -59,7 +54,7 @@ export default function AuthorCard() {
           </button>
 
           <ul className="flex items-center justify-center gap-[7px]">
-            {images.map((_, index) => (
+            {props.images.map((_, index) => (
               <li
                 key={index}
                 className={`h-2 ${activeIndex === index ? 'w-[18px] bg-[#FFFFFF]' : 'w-2 bg-[#FFFFFF99]'} rounded-full transition`}
@@ -73,7 +68,7 @@ export default function AuthorCard() {
           </ul>
 
           <button onClick={handleNext}>
-            <Right active={activeIndex === images.length - 1} />
+            <Right active={activeIndex === props.images.length - 1} />
           </button>
         </div>
       </div>

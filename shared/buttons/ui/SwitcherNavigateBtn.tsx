@@ -26,7 +26,7 @@ export const SwitcherNavigateBtn = () => {
   }, [url]);
 
   return (
-    <div className="relative flex rounded-[20px] bg-[#E8EEF9] p-2">
+    <div className="relative flex rounded-[20px] bg-[#FFFFFF] p-2">
       <If conditional={Boolean(active)}>
         <div
           className="absolute top-2 left-2 h-[42px] w-[151px] rounded-xl bg-[#047EFD] transition-transform duration-300"

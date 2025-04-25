@@ -182,7 +182,7 @@ export const LightBulb = () => {
             ))}
           </ul>
         </div>
-        <div className="flex flex-auto flex-col items-center justify-between rounded-xl bg-white p-[42px]">
+        <div className="flex flex-auto flex-col items-center justify-between overflow-hidden rounded-xl bg-white p-[42px]">
           <div
             onClick={handleSwitchLight}
             className="relative z-10 flex h-[76px] w-[155px] cursor-pointer items-center rounded-[53px] bg-white p-[9.47px] shadow-[inset_4.11597px_4.11597px_12.3479px_rgba(0,0,0,0.35),inset_-6.17396px_-6.17396px_12.3479px_#FFFFFF]"

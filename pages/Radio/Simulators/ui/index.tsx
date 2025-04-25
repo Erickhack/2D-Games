@@ -12,8 +12,8 @@ interface IProps {
 
 export default function RadioSimulatorsPage(props: IProps) {
   return (
-    <main className="flex flex-col justify-center gap-11 p-5 pt-16 pb-4">
-      <section>
+    <section className="flex flex-col justify-center gap-11 p-5 pt-16 pb-4">
+      <div>
         <Simulation
           title="1. Пазл"
           description={descriptoinOfSimulation1}
@@ -22,14 +22,14 @@ export default function RadioSimulatorsPage(props: IProps) {
           CORRECT_POSITIONS={props.CORRECT_POSITIONS}
           PIECE_SIZES={props.PIECE_SIZES}
         />
-      </section>
-      <section>
+      </div>
+      <div>
         <Simulation
           title="2. Симуляция"
           description={descriptoinOfSimulation2}
           simulation="radio"
         />
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }

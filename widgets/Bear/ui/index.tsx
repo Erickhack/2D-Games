@@ -50,11 +50,11 @@ export const Bear = () => {
           <span className="text-black">Привет! Что будем искать?</span>
           <div className="mt-3.5">
             <input
-              className="w-full rounded-[25px] border-2 border-[#4CAF50] p-2.5 text-base text-black transition-colors duration-300 outline-none placeholder:text-gray-500 focus:border-[#45a049]"
+              className="w-full rounded-[25px] border-2 border-[#047EFD] p-2.5 text-base text-black transition-colors duration-300 outline-none placeholder:text-gray-500 focus:border-[#046cfd]"
               type="text"
               placeholder="Введите запрос..."
             />
-            <button className="mt-2.5 cursor-pointer rounded-[25px] border-none bg-[#4CAF50] px-6 py-2.5 text-white transition-colors duration-300 hover:bg-[#45a049]">
+            <button className="mt-2.5 cursor-pointer rounded-[25px] border-none bg-[#047EFD] px-6 py-2.5 text-white transition-colors duration-300 hover:bg-[#046cfd]">
               Найти
             </button>
           </div>

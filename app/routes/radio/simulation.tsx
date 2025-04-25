@@ -11,7 +11,7 @@ const CORRECT_POSITIONS = [
 
 const PIECE_SIZES = [
   { width: 374, height: 136 },
-  { width: 517, height: 469 },
+  { width: 517, height: 469, scale: 0.2 },
   { width: 134, height: 152 },
   { width: 134, height: 154 },
   { width: 152, height: 43 },
