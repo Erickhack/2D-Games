@@ -180,7 +180,7 @@ export const LightBulb = () => {
   return (
     <div className="flex justify-center">
       <div className="flex h-[871px] w-[1400px] gap-8">
-        <div className="flex w-[445px] flex-col gap-[42px] rounded-xl bg-white p-8">
+        <div className="flex flex-col gap-[42px] w-[445px] rounded-xl bg-white p-8">
           <h2 className="text-[32px] font-semibold text-[#1B1A22]">
             {PIECES.find((piece) => piece.id === target)?.name ||
               'Выберите лампу'}

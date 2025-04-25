@@ -1,5 +1,4 @@
 import RadioSimulatorsPage from 'pages/Radio/Simulators';
-import SimulationPage from 'pages/simulators/ui';
 
 const CORRECT_POSITIONS = [
   { x: 586, y: 325 },
