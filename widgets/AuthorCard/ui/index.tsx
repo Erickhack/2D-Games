@@ -43,7 +43,9 @@ export default function AuthorCard(props: IProps) {
         >
           {props.images.map((image, index) => (
             <SwiperSlide key={index}>
-              <img src={image} alt={`Slide ${index + 1}`} />
+              <div>
+                <img src={image} alt={`Slide ${index + 1}`} />
+              </div>
             </SwiperSlide>
           ))}
         </Swiper>

@@ -6,7 +6,13 @@ export default function TractorHistoryPage() {
   return (
     <section className="mb-[135px] flex justify-center gap-11 p-5 pt-16 pb-4">
       <aside className="flex min-h-screen basis-2xs">
-        <AuthorCard />
+        <AuthorCard
+          images={[
+            '/tractor/history/author/author.png',
+            '/tractor/history/author/author.png',
+            '/tractor/history/author/author.png',
+          ]}
+        />
       </aside>
 
       <article className="basis-[1032px]">
