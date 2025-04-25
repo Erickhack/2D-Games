@@ -12,8 +12,8 @@ export default function RootLayout() {
       <div className="fixed right-1/3 bottom-10 left-1/3 z-50 flex justify-center">
         <SwitcherNavigateBtn />
       </div>
-      {/* <Bear /> */}
       <Footer />
+      <Bear />
     </>
   );
 }

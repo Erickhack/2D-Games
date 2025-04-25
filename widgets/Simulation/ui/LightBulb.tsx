@@ -1,7 +1,5 @@
 import React, {
   useEffect,
-  useMemo,
-  useReducer,
   useRef,
   useState,
   type EventHandler,
@@ -9,24 +7,7 @@ import React, {
 } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import clsx from 'clsx';
-
-const infos: {
-  title: string;
-  text: string;
-}[] = [
-  {
-    title: 'Срок службы',
-    text: '1 год',
-  },
-  {
-    title: 'Световой поток',
-    text: '40 ВТ',
-  },
-  {
-    title: 'Коэффицент пульсации',
-    text: '20%',
-  },
-];
+import { colorMap } from '../model/lightBulb';
 
 interface PuzzlePiece {
   id: number;
@@ -34,13 +15,13 @@ interface PuzzlePiece {
   height: number;
   name: string;
   src: string;
-  color: string;
+  color: keyof typeof colorMap;
 }
 
 const PIECES: {
   id: number;
   name: string;
-  color: string;
+  color: keyof typeof colorMap;
   info: { lable: string; value: number; unit: string }[];
 }[] = [
   {
@@ -66,7 +47,7 @@ const PIECES: {
   {
     id: 3,
     name: 'Светодиодная',
-    color: 'white',
+    color: 'skyBlue',
     info: [
       { lable: 'Срок службы', value: 20, unit: 'год' },
       { lable: 'Световой поток', value: 4, unit: 'ВТ' },
@@ -180,7 +161,7 @@ export const LightBulb = () => {
   return (
     <div className="flex justify-center">
       <div className="flex h-[871px] w-[1400px] gap-8">
-        <div className="flex flex-col gap-[42px] w-[445px] rounded-xl bg-white p-8">
+        <div className="flex w-[445px] flex-col gap-[42px] rounded-xl bg-white p-8">
           <h2 className="text-[32px] font-semibold text-[#1B1A22]">
             {PIECES.find((piece) => piece.id === target)?.name ||
               'Выберите лампу'}
@@ -253,7 +234,7 @@ export const LightBulb = () => {
 
 interface LightProps {
   isOn?: boolean;
-  lightColor?: string;
+  lightColor?: keyof typeof colorMap;
   intensity?: number;
   className?: string;
 }
@@ -266,18 +247,6 @@ const Light: React.FC<LightProps> = ({
 }) => {
   // Нормализуем интенсивность от 0 до 10
   const normalizedIntensity = Math.max(10, Math.min(10, intensity));
-
-  // Карта цветов для LED-освещения
-  const colorMap: Record<string, { rgb: string }> = {
-    white: { rgb: '255, 255, 255' },
-    warmWhite: { rgb: '255, 244, 229' },
-    coolWhite: { rgb: '240, 255, 255' },
-    red: { rgb: '255, 0, 0' },
-    green: { rgb: '0, 255, 0' },
-    blue: { rgb: '0, 70, 255' },
-    yellow: { rgb: '255, 255, 0' },
-    purple: { rgb: '170, 0, 255' },
-  };
 
   const { rgb } = colorMap[lightColor] || colorMap.white;
 
@@ -375,7 +344,7 @@ const Light: React.FC<LightProps> = ({
 
 interface ActiveLightProps {
   isOn?: boolean;
-  lightColor?: string;
+  lightColor: keyof typeof colorMap;
   intensity?: number;
   className?: string;
 }
@@ -394,17 +363,8 @@ const ActiveLight: React.FC<ActiveLightProps> = ({
   // Нормализуем интенсивность от 0 до 10
   const normalizedIntensity = Math.max(0, Math.min(10, intensity));
 
-  // Цветовая карта
-  const colorMap: Record<string, string> = {
-    yellow: 'rgba(255, 191, 0',
-    red: 'rgba(255, 0, 0',
-    green: 'rgba(0, 255, 0',
-    blue: 'rgba(0, 120, 255',
-    purple: 'rgba(128, 0, 128',
-    white: 'rgba(255, 255, 255',
-  };
-
-  const baseColor = colorMap[lightColor] || colorMap.yellow;
+  // Получаем RGB значение цвета
+  const { rgb } = colorMap[lightColor] || colorMap.yellow;
 
   // Рассчитываем параметры эффекта на основе интенсивности
   const opacity = 0.1 + normalizedIntensity * 0.05; // от 0.1 до 0.6
@@ -417,8 +377,8 @@ const ActiveLight: React.FC<ActiveLightProps> = ({
         style={{
           width: '50px',
           height: '50px',
-          backgroundColor: `${baseColor}, ${opacity})`,
-          boxShadow: `0 0 ${blurSize}px ${blurSize}px ${baseColor}, ${opacity})`,
+          backgroundColor: `rgba(${rgb}, ${opacity})`,
+          boxShadow: `0 0 ${blurSize}px ${blurSize}px rgba(${rgb}, ${opacity})`,
           filter: `blur(${blurSize / 3}px)`,
           transition: 'all 0.3s ease',
         }}
@@ -426,3 +386,5 @@ const ActiveLight: React.FC<ActiveLightProps> = ({
     </div>
   );
 };
+
+export default ActiveLight;
