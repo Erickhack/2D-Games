@@ -19,7 +19,7 @@ const PIECE_SIZES = [
 
 export default function Tractor() {
   return (
-    <main>
+    <main className="max-w-[1400px] mx-auto">
       <TractorHistoryPage />
 
       <TractorSimulationPage

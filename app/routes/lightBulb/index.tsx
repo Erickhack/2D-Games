@@ -25,7 +25,7 @@ const PIECE_SIZES = [
 
 export default function Tractor() {
   return (
-    <main>
+    <main className="mx-auto max-w-[1400px]">
       <LightBulbHistoryPage />
 
       <LightBulbSimulationPage

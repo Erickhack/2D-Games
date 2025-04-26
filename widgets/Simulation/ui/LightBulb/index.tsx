@@ -7,7 +7,9 @@ import React, {
 } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import clsx from 'clsx';
-import { colorMap } from '../model/lightBulb';
+import { colorMap } from '../../model/lightBulb';
+import ActiveLight from './ActiveLight';
+import Light from './Light';
 
 interface PuzzlePiece {
   id: number;
@@ -23,6 +25,7 @@ const PIECES: {
   name: string;
   color: keyof typeof colorMap;
   info: { lable: string; value: number; unit: string }[];
+  periodService: number; // срок службы в годах
 }[] = [
   {
     id: 1,
@@ -33,6 +36,7 @@ const PIECES: {
       { lable: 'Световой поток', value: 40, unit: 'ВТ' },
       { lable: 'Коэффицент пульсации', value: 20, unit: '%' },
     ],
+    periodService: 1, // 1 год
   },
   {
     id: 2,
@@ -43,6 +47,7 @@ const PIECES: {
       { lable: 'Световой поток', value: 9, unit: 'ВТ' },
       { lable: 'Коэффицент пульсации', value: 50, unit: '%' },
     ],
+    periodService: 6, // 6 лет
   },
   {
     id: 3,
@@ -53,6 +58,7 @@ const PIECES: {
       { lable: 'Световой поток', value: 4, unit: 'ВТ' },
       { lable: 'Коэффицент пульсации', value: 5, unit: '%' },
     ],
+    periodService: 20, // 20 лет
   },
 ];
 
@@ -117,19 +123,64 @@ export const LightBulb = () => {
   const audioOn = useRef<HTMLAudioElement>(null);
   const audioOFf = useRef<HTMLAudioElement>(null);
 
+  // Добавляем состояния для отслеживания срока службы
+  const [elapsedTime, setElapsedTime] = useState(0); // в месяцах
+  const [serviceProgress, setServiceProgress] = useState(0); // в процентах
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Функция для обновления прогресса срока службы
+  const updateServiceProgress = () => {
+    if (target === 0 || !lightActive) return;
+
+    const selectedPiece = PIECES.find((piece) => piece.id === target);
+    if (!selectedPiece) return;
+
+    // Преобразуем годы в месяцы для более плавной анимации
+    const totalServiceMonths = selectedPiece.periodService * 12;
+
+    // Вычисляем прогресс в процентах
+    const progress = Math.min(100, (elapsedTime / totalServiceMonths) * 100);
+    setServiceProgress(progress);
+
+    // Если срок службы истек, выключаем лампу
+    if (elapsedTime >= totalServiceMonths) {
+      setLightActive(false);
+      audioOFf.current?.play();
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+  };
+
   const handleSwitchLight = () => {
     if (target === 0) return;
 
     setLightActive((prev) => {
-      if (!audioOFf && !audioOn) return !prev;
+      const newState = !prev;
+
+      if (!audioOFf.current && !audioOn.current) return newState;
 
       if (prev) {
         audioOFf.current?.play();
+        // Останавливаем таймер при выключении
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
       } else {
         audioOn.current?.play();
+        // Запускаем таймер при включении
+        if (!timerRef.current) {
+          // Обновляем каждую секунду, но увеличиваем на 1 месяц каждые 3 секунды для демонстрации
+          // В реальном приложении можно настроить другую скорость
+          timerRef.current = setInterval(() => {
+            setElapsedTime((prev) => prev + 1);
+          }, 3000); // Ускоренная симуляция: 1 месяц = 3 секунды
+        }
       }
 
-      return !prev;
+      return newState;
     });
   };
 
@@ -153,10 +204,64 @@ export const LightBulb = () => {
       setLightActive(false);
       audioOFf.current?.play();
     }
+
+    // Сбрасываем таймер и прогресс при смене лампы
+    setElapsedTime(0);
+    setServiceProgress(0);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
   }, [target]);
+
+  // Обновляем прогресс при изменении времени
+  useEffect(() => {
+    updateServiceProgress();
+  }, [elapsedTime, target, lightActive]);
+
+  // Очищаем таймер при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
   const lightOn = 'translate-x-[calc(100%+20px)]';
   const lightOf = 'translate-x-0';
+
+  // Форматируем оставшееся время для отображения
+  const formatRemainingTime = () => {
+    const selectedPiece = PIECES.find((piece) => piece.id === target);
+    if (!selectedPiece) return '2 месяца';
+
+    const totalServiceMonths = selectedPiece.periodService * 12;
+    const remainingMonths = Math.max(0, totalServiceMonths - elapsedTime);
+
+    if (remainingMonths >= 12) {
+      const years = Math.floor(remainingMonths / 12);
+      const months = remainingMonths % 12;
+      return months > 0
+        ? `${years} ${getYearText(years)}, ${months} ${getMonthText(months)}`
+        : `${years} ${getYearText(years)}`;
+    } else {
+      return `${remainingMonths} ${getMonthText(remainingMonths)}`;
+    }
+  };
+
+  // Функции для правильного склонения слов
+  const getYearText = (years: number) => {
+    if (years === 1) return 'год';
+    if (years >= 2 && years <= 4) return 'года';
+    return 'лет';
+  };
+
+  const getMonthText = (months: number) => {
+    if (months === 1) return 'месяц';
+    if (months >= 2 && months <= 4) return 'месяца';
+    return 'месяцев';
+  };
 
   return (
     <div className="flex justify-center">
@@ -201,6 +306,31 @@ export const LightBulb = () => {
               lightColor={PIECES.find((pice) => pice.id === target)?.color}
             />
           </div>
+          <div className="flex w-full flex-col gap-6">
+            <h5 className="text-xl font-semibold text-[#0C0C0CCC]">
+              Срок службы
+            </h5>
+            <div
+              className={`flex items-center gap-6 ${target ? 'visible' : 'invisible'}`}
+            >
+              <span className="text-lg font-medium text-[#047EFD]">
+                {formatRemainingTime()}
+              </span>
+              <div
+                className="h-1 flex-1"
+                style={{
+                  background: `linear-gradient(90deg, #047EFD ${100 - serviceProgress}%, #FFFFFF ${Math.max(100 - serviceProgress + 45, 100)}%)`,
+                }}
+              />
+              <span className="text-lg font-medium text-[#0C0C0CCC]">
+                {PIECES.find((piece) => piece.id === target)?.periodService}{' '}
+                {getYearText(
+                  PIECES.find((piece) => piece.id === target)?.periodService ||
+                    0,
+                )}
+              </span>
+            </div>
+          </div>
         </div>
         <div>
           <Swiper
@@ -231,160 +361,3 @@ export const LightBulb = () => {
     </div>
   );
 };
-
-interface LightProps {
-  isOn?: boolean;
-  lightColor?: keyof typeof colorMap;
-  intensity?: number;
-  className?: string;
-}
-
-const Light: React.FC<LightProps> = ({
-  isOn = false,
-  lightColor = 'white',
-  intensity = 5,
-  className,
-}) => {
-  // Нормализуем интенсивность от 0 до 10
-  const normalizedIntensity = Math.max(10, Math.min(10, intensity));
-
-  const { rgb } = colorMap[lightColor] || colorMap.white;
-
-  // Если свет выключен, не показываем эффект освещения
-  if (!isOn) {
-    return <div className={className} />;
-  }
-
-  // Рассчитываем параметры освещения на основе интенсивности
-  const opacity = 0.15 + normalizedIntensity * 0.06; // от 0.15 до 0.75
-  const blurSize = 8 + normalizedIntensity * 4; // от 8px до 48px
-  const glowSize = 130 + normalizedIntensity * 20; // от 30px до 230px
-
-  return (
-    <div
-      className={clsx(
-        'absolute h-full w-full transition-all duration-200',
-        className,
-      )}
-    >
-      {/* Основное свечение вокруг лампы - равномерное во все стороны */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
-        style={{
-          width: `${glowSize}px`,
-          height: `${glowSize}px`,
-          background: `radial-gradient(circle, 
-                      rgba(${rgb}, ${opacity * 1.3}) 0%, 
-                      rgba(${rgb}, ${opacity * 0.6}) 40%, 
-                      rgba(${rgb}, ${opacity * 0.2}) 70%, 
-                      rgba(${rgb}, 0) 100%)`,
-          filter: `blur(${blurSize}px)`,
-          transition: 'all 0.2s ease',
-        }}
-      />
-
-      {/* Легкий эффект на потолке - более мягкое свечение вверх */}
-      <div
-        className="absolute -top-40 left-1/2 -translate-x-1/2 transform rounded-full"
-        style={{
-          width: `${glowSize * 3}px`,
-          height: `${glowSize * 0.7}px`,
-          background: `radial-gradient(ellipse at center, 
-                      rgba(${rgb}, ${opacity * 0.5}) 0%, 
-                      rgba(${rgb}, 0) 70%)`,
-          filter: `blur(${blurSize * 1.5}px)`,
-          transition: 'all 0.2s ease',
-        }}
-      />
-
-      {/* Более интенсивное освещение пола - направленный свет вниз */}
-      <div
-        className="absolute -bottom-40 left-1/2 -translate-x-1/2 transform rounded-full"
-        style={{
-          width: `${glowSize * 1.5}px`,
-          height: `${glowSize * 0.4}px`,
-          background: `radial-gradient(ellipse at center, 
-                      rgba(${rgb}, ${opacity * 0.9}) 0%, 
-                      rgba(${rgb}, ${opacity * 0.4}) 50%, 
-                      rgba(${rgb}, 0) 85%)`,
-          filter: `blur(${blurSize * 3}px)`,
-          transition: 'all 0.2s ease',
-        }}
-      />
-
-      {/* Эффект отражения на стенах - боковое свечение */}
-      <div
-        className="absolute top-1/2 -left-40 -translate-y-1/2 transform rounded-full"
-        style={{
-          width: `${glowSize * 0.8}px`,
-          height: `${glowSize * 3}px`,
-          background: `radial-gradient(ellipse at left, 
-                      rgba(${rgb}, ${opacity * 0.4}) 0%, 
-                      rgba(${rgb}, 0) 80%)`,
-          filter: `blur(${blurSize * 1.5}px)`,
-          transition: 'all 0.2s ease',
-        }}
-      />
-
-      <div
-        className="absolute top-1/2 -right-40 -translate-y-1/2 transform rounded-full"
-        style={{
-          width: `${glowSize * 0.8}px`,
-          height: `${glowSize * 3}px`,
-          background: `radial-gradient(ellipse at right, 
-                      rgba(${rgb}, ${opacity * 0.4}) 0%, 
-                      rgba(${rgb}, 0) 80%)`,
-          filter: `blur(${blurSize * 1.5}px)`,
-          transition: 'all 0.2s ease',
-        }}
-      />
-    </div>
-  );
-};
-
-interface ActiveLightProps {
-  isOn?: boolean;
-  lightColor: keyof typeof colorMap;
-  intensity?: number;
-  className?: string;
-}
-
-const ActiveLight: React.FC<ActiveLightProps> = ({
-  isOn = false,
-  lightColor = 'yellow',
-  intensity = 5,
-  className,
-}) => {
-  // Если свет выключен, не показываем эффект
-  if (!isOn) {
-    return <div className={className} />;
-  }
-
-  // Нормализуем интенсивность от 0 до 10
-  const normalizedIntensity = Math.max(0, Math.min(10, intensity));
-
-  // Получаем RGB значение цвета
-  const { rgb } = colorMap[lightColor] || colorMap.yellow;
-
-  // Рассчитываем параметры эффекта на основе интенсивности
-  const opacity = 0.1 + normalizedIntensity * 0.05; // от 0.1 до 0.6
-  const blurSize = 15 + normalizedIntensity * 5; // от 15px до 65px
-
-  return (
-    <div className={clsx('absolute', className)}>
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
-        style={{
-          width: '50px',
-          height: '50px',
-          backgroundColor: `rgba(${rgb}, ${opacity})`,
-          boxShadow: `0 0 ${blurSize}px ${blurSize}px rgba(${rgb}, ${opacity})`,
-          filter: `blur(${blurSize / 3}px)`,
-          transition: 'all 0.3s ease',
-        }}
-      />
-    </div>
-  );
-};
-
-export default ActiveLight;
