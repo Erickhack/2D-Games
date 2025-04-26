@@ -57,7 +57,7 @@ export const Bear = () => {
               placeholder="Введите запрос..."
             />
 
-            <Button className="flex w-max gap-2.5 px-6 py-2">
+            <Button className="flex w-max gap-2.5 px-6 py-2 hover:bg-[#046cfd]">
               <SearchSVG />
               <span>Найти</span>
             </Button>

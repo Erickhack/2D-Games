@@ -8,10 +8,7 @@ export default function Button({ children, ...args }: IProps) {
   return (
     <button
       {...args}
-      className={
-        'flex cursor-pointer items-center justify-center rounded-md bg-[#047EFD] hover:bg-[#046cfd] ' +
-        args.className
-      }
+      className={`flex cursor-pointer items-center justify-center rounded-md bg-[#047EFD] ${args.className}`}
     >
       {children}
     </button>
