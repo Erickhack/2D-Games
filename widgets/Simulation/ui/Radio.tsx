@@ -29,33 +29,33 @@ export const Radio = () => {
   } | null>(null);
   const imagesLoadedRef = useRef(false);
   const animationFrameRef = useRef<number | null>(null);
-  
+
   // Добавляем ref для отслеживания активного тюнера
   const activeTunerRef = useRef<{
-    setAngle: React.Dispatch<React.SetStateAction<number>>,
-    x: number,
-    y: number,
-    size: number,
-    initialAngle: number,
-    initialMouseX: number,
-    initialMouseY: number
+    setAngle: React.Dispatch<React.SetStateAction<number>>;
+    x: number;
+    y: number;
+    size: number;
+    initialAngle: number;
+    initialMouseX: number;
+    initialMouseY: number;
   } | null>(null);
 
   const [pointerPosition, setPointerPosition] = useState(500);
   const [tuner1Angle, setTuner1Angle] = useState(0);
   const [tuner2Angle, setTuner2Angle] = useState(0);
   const [tuner3Angle, setTuner3Angle] = useState(0);
-  
-  // Новые состояния для механики прогресса
+
+  // Состояния для механики прогресса
   const [progress, setProgress] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
-  
+
   // Целевые значения для тюнеров (фиксированные значения для примера)
   const targetAngles = useRef({
     tuner1: 120, // Целевой угол для первого тюнера
     tuner2: 240, // Целевой угол для второго тюнера
-    tuner3: 60,  // Целевой угол для третьего тюнера
-    tolerance: 15 // Допустимое отклонение в градусах
+    tuner3: 60, // Целевой угол для третьего тюнера
+    tolerance: 15, // Допустимое отклонение в градусах
   });
 
   useEffect(() => {
@@ -74,38 +74,38 @@ export const Radio = () => {
     const angle1 = normalizeAngle(tuner1Angle);
     const angle2 = normalizeAngle(tuner2Angle);
     const angle3 = normalizeAngle(tuner3Angle);
-    
+
     const target1 = normalizeAngle(targetAngles.current.tuner1);
     const target2 = normalizeAngle(targetAngles.current.tuner2);
     const target3 = normalizeAngle(targetAngles.current.tuner3);
-    
+
     // Вычисляем наименьшую угловую разницу для каждого тюнера
     const angleDiff = (a1: number, a2: number) => {
       const diff = Math.abs(a1 - a2);
       return Math.min(diff, 360 - diff);
     };
-    
+
     const diff1 = angleDiff(angle1, target1);
     const diff2 = angleDiff(angle2, target2);
     const diff3 = angleDiff(angle3, target3);
-    
+
     // Максимально возможная разница - 180 градусов
     const maxDiff = 180;
-    
+
     // Вычисляем процент совпадения для каждого тюнера (0-100%)
-    const match1 = 100 - (diff1 / maxDiff * 100);
-    const match2 = 100 - (diff2 / maxDiff * 100);
-    const match3 = 100 - (diff3 / maxDiff * 100);
-    
+    const match1 = 100 - (diff1 / maxDiff) * 100;
+    const match2 = 100 - (diff2 / maxDiff) * 100;
+    const match3 = 100 - (diff3 / maxDiff) * 100;
+
     // Общий прогресс - среднее арифметическое
     const totalProgress = Math.round((match1 + match2 + match3) / 3);
-    
+
     // Проверяем, достигнуты ли целевые значения с учетом допуска
-    const isOnTarget = 
-      diff1 <= targetAngles.current.tolerance && 
-      diff2 <= targetAngles.current.tolerance && 
+    const isOnTarget =
+      diff1 <= targetAngles.current.tolerance &&
+      diff2 <= targetAngles.current.tolerance &&
       diff3 <= targetAngles.current.tolerance;
-    
+
     return { progress: totalProgress, isOnTarget };
   }, [tuner1Angle, tuner2Angle, tuner3Angle]);
 
@@ -168,28 +168,30 @@ export const Radio = () => {
     const minX = radioX + 100;
     const maxX = radioX + radioWidth - 100;
     const range = maxX - minX;
-    
+
     // Нормализуем углы тюнеров в диапазон 0-1
     const normalizeAngle = (angle: number) => {
       let normalized = angle % 360;
       if (normalized < 0) normalized += 360;
       return normalized / 360;
     };
-    
+
     // Вычисляем влияние каждого тюнера
     const tuner1Value = normalizeAngle(tuner1Angle);
     const tuner2Value = normalizeAngle(tuner2Angle);
     const tuner3Value = normalizeAngle(tuner3Angle);
-    
+
     // Вычисляем позицию указателя как взвешенное среднее от всех тюнеров
-    const newPosition = minX + (tuner1Value * 0.4 + tuner2Value * 0.3 + tuner3Value * 0.3) * range;
-    
+    const newPosition =
+      minX +
+      (tuner1Value * 0.4 + tuner2Value * 0.3 + tuner3Value * 0.3) * range;
+
     setPointerPosition(newPosition);
-    
+
     // Обновляем прогресс
     const { progress: newProgress, isOnTarget } = calculateProgress();
     setProgress(newProgress);
-    
+
     // Показываем сообщение об успехе, если достигнута цель
     if (isOnTarget && !showSuccess) {
       setShowSuccess(true);
@@ -199,44 +201,38 @@ export const Radio = () => {
   }, [tuner1Angle, tuner2Angle, tuner3Angle, calculateProgress, showSuccess]);
 
   // Обновленная функция для вращения тюнеров
-  const rotateTuner = useCallback(
-    (e: MouseEvent) => {
-      if (!activeTunerRef.current) return;
-      
-      const { 
-        setAngle, 
-        x, 
-        y, 
-        size, 
-        initialAngle, 
-        initialMouseX, 
-        initialMouseY 
-      } = activeTunerRef.current;
-      
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect) return;
+  const rotateTuner = useCallback((e: MouseEvent) => {
+    if (!activeTunerRef.current) return;
 
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-      
-      // Вычисляем центр тюнера
-      const centerX = x + size / 2;
-      const centerY = y + size / 2;
-      
-      // Вычисляем угол между центром тюнера и текущей позицией мыши
-      const currentAngle = Math.atan2(mouseY - centerY, mouseX - centerX) * 180 / Math.PI - 90;
-      
-      // Вычисляем угол между центром тюнера и начальной позицией мыши
-      const initialCalculatedAngle = Math.atan2(initialMouseY - centerY, initialMouseX - centerX) * 180 / Math.PI - 90;
-      
-      // Вычисляем разницу между текущим углом и начальным
-      const angleDiff = currentAngle - initialCalculatedAngle;
-      
-      // Применяем разницу к начальному углу тюнера
-      setAngle(initialAngle + angleDiff);
-    },
-    [],
-  );
+    const { setAngle, x, y, size, initialAngle, initialMouseX, initialMouseY } =
+      activeTunerRef.current;
+
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // Вычисляем центр тюнера
+    const centerX = x + size / 2;
+    const centerY = y + size / 2;
+
+    // Вычисляем угол между центром тюнера и текущей позицией мыши
+    const currentAngle =
+      (Math.atan2(mouseY - centerY, mouseX - centerX) * 180) / Math.PI - 90;
+
+    // Вычисляем угол между центром тюнера и начальной позицией мыши
+    const initialCalculatedAngle =
+      (Math.atan2(initialMouseY - centerY, initialMouseX - centerX) * 180) /
+        Math.PI -
+      90;
+
+    // Вычисляем разницу между текущим углом и начальным
+    const angleDiff = currentAngle - initialCalculatedAngle;
+
+    // Применяем разницу к начальному углу тюнера
+    setAngle(initialAngle + angleDiff);
+  }, []);
 
   // Функция отрисовки всего содержимого
   const drawCanvas = useCallback(() => {
@@ -359,52 +355,6 @@ export const Radio = () => {
       pointerWidth,
       pointerHeight,
     );
-    
-    // Рисуем индикатор прогресса
-    const progressWidth = 200;
-    const progressHeight = 20;
-    const progressX = CANVAS_WIDTH - progressWidth - 20;
-    const progressY = 20;
-    
-    // Фон индикатора
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(progressX, progressY, progressWidth, progressHeight);
-    
-    // Заполнение индикатора
-    const fillWidth = (progress / 100) * progressWidth;
-    
-    // Цвет заполнения зависит от прогресса
-    let fillColor;
-    if (progress < 30) fillColor = '#FF4D4D'; // Красный
-    else if (progress < 70) fillColor = '#FFCC00'; // Желтый
-    else fillColor = '#4CAF50'; // Зеленый
-    
-    ctx.fillStyle = fillColor;
-    ctx.fillRect(progressX, progressY, fillWidth, progressHeight);
-    
-    // Текст прогресса
-    ctx.fillStyle = 'white';
-    ctx.font = '14px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${progress}%`, progressX + progressWidth / 2, progressY + 15);
-    
-    // Рисуем сообщение об успехе, если достигнута цель
-    if (showSuccess) {
-      const messageX = CANVAS_WIDTH / 2;
-      const messageY = 100;
-      
-      // Фон сообщения
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(messageX - 150, messageY - 30, 300, 60);
-      
-      // Текст сообщения
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 18px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Поздравляем!', messageX, messageY - 5);
-      ctx.font = '16px Arial';
-      ctx.fillText('Вы настроили правильную волну!', messageX, messageY + 20);
-    }
   }, [
     pointerPosition,
     tuner1Angle,
@@ -412,7 +362,6 @@ export const Radio = () => {
     tuner3Angle,
     drawRotatedImage,
     getWaveParameters,
-    progress,
     showSuccess,
   ]);
 
@@ -453,17 +402,17 @@ export const Radio = () => {
 
       // Проверяем, на какой тюнер кликнули
       const checkTuner = (
-        tunerX: number, 
-        tunerY: number, 
+        tunerX: number,
+        tunerY: number,
         currentAngle: number,
-        setAngle: React.Dispatch<React.SetStateAction<number>>
+        setAngle: React.Dispatch<React.SetStateAction<number>>,
       ) => {
         const centerX = tunerX + tunerSize / 2;
         const centerY = tunerY + tunerSize / 2;
         const distance = Math.sqrt(
-          Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2)
+          Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2),
         );
-        
+
         if (distance <= tunerSize / 2) {
           // Сохраняем начальное состояние для последующего вращения
           activeTunerRef.current = {
@@ -473,7 +422,7 @@ export const Radio = () => {
             size: tunerSize,
             initialAngle: currentAngle,
             initialMouseX: mouseX,
-            initialMouseY: mouseY
+            initialMouseY: mouseY,
           };
           return true;
         }
@@ -517,7 +466,14 @@ export const Radio = () => {
   // Эффект для перерисовки при изменении состояний
   useEffect(() => {
     drawCanvas();
-  }, [drawCanvas, pointerPosition, tuner1Angle, tuner2Angle, tuner3Angle, progress, showSuccess]);
+  }, [
+    drawCanvas,
+    pointerPosition,
+    tuner1Angle,
+    tuner2Angle,
+    tuner3Angle,
+    showSuccess,
+  ]);
 
   // Эффект для обновления положения указателя при изменении углов тюнеров
   useEffect(() => {
@@ -525,7 +481,24 @@ export const Radio = () => {
   }, [tuner1Angle, tuner2Angle, tuner3Angle, updatePointerPosition]);
 
   return (
-    <div className="flex justify-center">
+    <div className="relative flex justify-center">
+      <div className="absolute top-[48px] left-[33px] flex gap-[18px] rounded-md bg-white px-4 py-[6.5px] shadow-md">
+        <div>
+          <span className="text-xl font-medium text-[#047EFD]">Волна:</span>
+        </div>
+        <div className="text-xl">
+          <span className="text-[#047EFD]">{progress}%</span>{' '}
+          <span className="text-[#1B1A2299]">/ 100%</span>
+        </div>
+      </div>
+
+      {showSuccess && (
+        <div className="bg-opacity-70 absolute top-[100px] left-1/2 flex -translate-x-1/2 transform flex-col items-center justify-center rounded-md bg-white px-6 py-4 text-[#047EFD]">
+          <div className="mb-1 text-xl font-bold">Поздравляем!</div>
+          <div className="text-lg">Вы настроили правильную волну!</div>
+        </div>
+      )}
+
       <canvas
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
