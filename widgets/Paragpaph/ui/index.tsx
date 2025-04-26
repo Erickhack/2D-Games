@@ -25,7 +25,7 @@ export default function Paragrapg(props: IProps) {
   return (
     <div className="flex flex-col gap-10">
       <div className="flex justify-between gap-8">
-        <div className="flex flex-col gap-5">
+        <div className="flex max-w-[674px] flex-col gap-5">
           <h1 className="text-5xl/[58px] font-semibold text-[#1B1A22]">
             {props.title}
           </h1>

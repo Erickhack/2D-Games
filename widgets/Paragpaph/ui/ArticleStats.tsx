@@ -4,7 +4,7 @@ import { ViewsSVG } from 'shared/svgs/ui/views';
 
 export default function ArticleStats() {
   return (
-    <div className="flex h-[54px] w-[326px] items-center justify-between rounded-3xl bg-white px-6 py-3.5">
+    <div className="flex h-[54px] w-max items-center justify-between gap-6 rounded-3xl bg-white px-6 py-3.5">
       <div className="flex items-center justify-center gap-3.5">
         <HeartSVG />
         <span className="font-medium text-[#1B1A22]">3450</span>
