@@ -53,7 +53,6 @@ const SwitcherSimulation = ({
       );
     case 'tractor':
       return <Tractor restoreRef={restoreRef} />;
-
     case 'radio':
       return <Radio />;
     case 'light-bulb':

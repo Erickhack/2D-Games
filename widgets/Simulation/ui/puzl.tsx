@@ -76,13 +76,6 @@ export const Puzl = ({
   const [activeHint, setActiveHint] = useState<number | null>(null);
   const [hintsUsed, setHintsUsed] = useState<number>(0);
   const [puzzleCompleted, setPuzzleCompleted] = useState<boolean>(false);
-  const [completionTime, setCompletionTime] = useState<number>(0);
-  const [startTime, setStartTime] = useState<number>(Date.now());
-  const [timerStarted, setTimerStarted] = useState<boolean>(false);
-  const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(
-    null,
-  );
 
   const [hintMessage, setHintMessage] = useState<string>('');
   const [showHintPanel, setShowHintPanel] = useState<boolean>(false);
@@ -94,28 +87,6 @@ export const Puzl = ({
   const animationRef = useRef<number | null>(null);
   const swiperRef = useRef<SwiperType | null>(null);
 
-  // Функция для запуска таймера
-  const startTimer = () => {
-    if (timerStarted) return;
-
-    setStartTime(Date.now());
-    setTimerStarted(true);
-
-    const interval = setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
-
-    setTimerInterval(interval);
-  };
-
-  // Функция для остановки таймера
-  const stopTimer = () => {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      setTimerInterval(null);
-    }
-  };
-
   useEffect(() => {
     // Инициализация физического мира
     initPhysicsWorld();
@@ -125,8 +96,6 @@ export const Puzl = ({
     setHintsUsed(0);
     setPuzzleCompleted(false);
     setShowHintPanel(false);
-    setTimerStarted(false);
-    setElapsedTime(0);
 
     // Привязка функции сброса к внешнему ref
     restoreRef.current = resetPuzzle;
@@ -134,7 +103,6 @@ export const Puzl = ({
     // Функция очистки при размонтировании
     return () => {
       cleanupPhysicsWorld();
-      stopTimer();
     };
   }, []);
 
@@ -145,20 +113,15 @@ export const Puzl = ({
       puzzlePieces.length > 0 &&
       !puzzleCompleted
     ) {
-      // Останавливаем таймер
-      stopTimer();
-
       // Устанавливаем флаг завершения
       setPuzzleCompleted(true);
 
       // Небольшая задержка перед показом панели статистики для лучшего UX
       setTimeout(() => {
-        // Показываем панель статистики
-        setHintMessage(getCompletionMessage(elapsedTime));
         setShowHintPanel(true);
       }, 500);
     }
-  }, [completedCount, puzzlePieces.length, puzzleCompleted, elapsedTime]);
+  }, [completedCount, puzzlePieces.length, puzzleCompleted]);
 
   // Функция для форматирования времени
   const formatTime = (seconds: number): string => {
@@ -182,23 +145,6 @@ export const Puzl = ({
     }
 
     return `Пазл собран! Время: ${timeFormatted}. Использовано подсказок: ${hintsUsed}. ${rating}`;
-  };
-
-  const handlePiecePlaced = (pieceId: number): void => {
-    // Запускаем таймер, если это первый размещенный кусочек
-    if (completedCount === 0) {
-      startTimer();
-    }
-
-    // Обновляем состояние кусочка
-    setPuzzlePieces((prevPieces) =>
-      prevPieces.map((piece) =>
-        piece.id === pieceId ? { ...piece, placed: true } : piece,
-      ),
-    );
-
-    // Увеличиваем счетчик завершенных кусочков
-    setCompletedCount((prev) => prev + 1);
   };
 
   // Функция инициализации физического мира
@@ -499,11 +445,6 @@ export const Puzl = ({
     setPuzzleCompleted(false);
     setShowHintPanel(false);
 
-    // Сброс таймера
-    stopTimer();
-    setTimerStarted(false);
-    setElapsedTime(0);
-
     // Удаляем все физические тела
     Object.values(bodiesRef.current).forEach((body) => {
       if (worldRef.current) {
@@ -782,17 +723,6 @@ export const Puzl = ({
     );
   };
 
-  // Добавим таймер для отображения текущего времени
-  const renderTimer = () => {
-    return (
-      <div className="absolute top-6 left-[200px] rounded-[6px] bg-white px-4 py-1.5">
-        <span className="text-[20px]/[130%] text-[#047EFD]">
-          Время: {timerStarted ? formatTime(elapsedTime) : '00:00'}
-        </span>
-      </div>
-    );
-  };
-
   // Добавим кнопку подсказки в верхнюю часть canvas
   const renderHintButton = () => (
     <div className="absolute top-6 right-[230px] z-10">
@@ -863,32 +793,6 @@ export const Puzl = ({
         }
       });
     }, 350);
-  };
-
-  const renderStartMessage = () => {
-    if (timerStarted || completedCount > 0) return null;
-
-    return (
-      <div className="absolute top-1/2 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white/90 px-8 py-6 text-center shadow-lg">
-        <h2 className="mb-4 text-2xl font-bold text-[#047EFD]">
-          Готовы начать?
-        </h2>
-        <p className="mb-6 text-lg text-gray-700">
-          Разместите первый кусочек пазла, чтобы начать игру и запустить таймер.
-        </p>
-        <div className="flex justify-center">
-          <button
-            onClick={() => {
-              // Можно добавить опцию ручного запуска таймера
-              startTimer();
-            }}
-            className="rounded-[6px] bg-[#047EFD] px-6 py-2 text-white hover:bg-blue-600"
-          >
-            Запустить таймер сейчас
-          </button>
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -973,24 +877,14 @@ export const Puzl = ({
                 <ArrDown />
               </Button>
             </>
-          ) : (
-            <div className="flex h-full items-center justify-center text-gray-500">
-              Все кусочки размещены!
-            </div>
-          )}
+          ) : null}
         </div>
-
-        {/* Добавляем таймер */}
-        {renderTimer()}
 
         {/* Отображение подсказок */}
         {showHints && puzzlePieces.map(renderHint)}
 
         {/* Кусочки пазла на canvas */}
         {puzzlePieces.map(renderPuzzlePiece)}
-
-        {/* Сообщение о начале игры */}
-        {renderStartMessage()}
 
         {/* Панель подсказок */}
         {renderHintPanel()}
