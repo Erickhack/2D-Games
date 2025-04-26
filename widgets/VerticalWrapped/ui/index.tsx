@@ -39,7 +39,10 @@ const PartCards = (props: IParts) => {
           key={`${card.title}-${index}`}
         >
           <div className="flex items-center justify-between">
-            <img src={card.img} width={44} height={44} />
+            <img
+              src={card.img}
+              className="size-[44px] rounded-[9px] object-cover object-top"
+            />
             <Link to={card.link} className="text-[#047EFD]">
               Читать
             </Link>
