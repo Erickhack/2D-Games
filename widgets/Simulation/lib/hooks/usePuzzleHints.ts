@@ -1,97 +1,127 @@
 // widgets/Simulation/lib/hooks/usePuzzleHints.ts
-import { useState, useCallback } from 'react';
-import {
-  HINT_DURATION,
-  MESSAGES,
-} from '../../model/constants/puzzle.constants';
+import { useCallback } from 'react';
 import type { PuzzlePiece } from '../../model/types/puzzle.types';
-import { getCompletionMessage } from '../utils/puzzleUtils';
+import { HINT_DURATION } from '../../model/constants/puzzle.constants';
 
-interface UsePuzzleHintsProps {
-  puzzlePieces: PuzzlePiece[];
-  completedCount: number;
-  elapsedTime: number;
-  scrollToSlide?: (index: number) => void;
-}
-
-export const usePuzzleHints = ({
-  puzzlePieces,
-  completedCount,
-  elapsedTime,
+export function usePuzzleHints({
+  state,
+  setState,
+  swiperPieces,
   scrollToSlide,
-}: UsePuzzleHintsProps) => {
-  // Состояния для подсказок
-  const [hintsUsed, setHintsUsed] = useState<number>(0);
-  const [activeHint, setActiveHint] = useState<number | null>(null);
-  const [showHintPanel, setShowHintPanel] = useState<boolean>(false);
-  const [hintMessage, setHintMessage] = useState<string>('');
-
-  // Функция для показа подсказки
-  const showHint = useCallback(() => {
-    // Если уже есть активная подсказка, не показываем новую
-    if (activeHint !== null) return;
-
-    // Находим случайный неразмещенный кусочек
-    const unplacedPieces = puzzlePieces.filter((piece) => !piece.placed);
-
-    if (unplacedPieces.length === 0) return;
-
-    const randomPiece =
-      unplacedPieces[Math.floor(Math.random() * unplacedPieces.length)];
-
-    // Устанавливаем активную подсказку
-    setActiveHint(randomPiece.id);
-
-    // Увеличиваем счетчик использованных подсказок
-    setHintsUsed((prev) => prev + 1);
-
-    // Показываем сообщение с подсказкой
-    setHintMessage(randomPiece.inSwiper ? MESSAGES.HINT : MESSAGES.HINT_PLACED);
-
-    setShowHintPanel(true);
-
-    // Если кусочек в свайпере, прокручиваем к нему
-    if (randomPiece.inSwiper && scrollToSlide) {
-      const swiperIndex = puzzlePieces
-        .filter((p) => p.inSwiper)
-        .findIndex((p) => p.id === randomPiece.id);
-
-      if (swiperIndex !== -1) {
-        scrollToSlide(swiperIndex);
+  formatTime,
+}: {
+  state: {
+    puzzlePieces: PuzzlePiece[];
+    activeHint: number | null;
+    hintsUsed: number;
+    completedCount: number;
+    elapsedTime: number;
+  };
+  setState: (state: any) => void;
+  swiperPieces: PuzzlePiece[];
+  scrollToSlide: (index: number) => void;
+  formatTime: (seconds: number) => string;
+}) {
+  const showHintForPiece = useCallback(
+    (pieceId: number): void => {
+      // Если подсказка уже активна для этого кусочка, скрываем ее
+      if (state.activeHint === pieceId) {
+        setState((prev: any) => ({
+          ...prev,
+          activeHint: null,
+          showHintPanel: false,
+        }));
+        return;
       }
+
+      // Активируем подсказку для выбранного кусочка
+      setState((prev: any) => ({ ...prev, activeHint: pieceId }));
+
+      // Находим кусочек
+      const piece = state.puzzlePieces.find((p) => p.id === pieceId);
+
+      if (piece) {
+        // Если кусочек в слайдере, прокручиваем слайдер к нему
+        if (piece.inSwiper) {
+          // Находим индекс слайда с этим кусочком
+          const slideIndex = swiperPieces.findIndex((p) => p.id === piece.id);
+          if (slideIndex !== -1) {
+            // Прокручиваем к этому слайду
+            scrollToSlide(slideIndex);
+
+            // Показываем сообщение подсказки
+            setState((prev: any) => ({
+              ...prev,
+              hintMessage: `Найдите этот кусочек в слайдере справа и перетащите его на подсвеченное место`,
+              showHintPanel: true,
+            }));
+          }
+        } else {
+          // Если кусочек уже на холсте
+          setState((prev: any) => ({
+            ...prev,
+            hintMessage: `Перетащите выделенный кусочек на подсвеченное место`,
+            showHintPanel: true,
+          }));
+        }
+
+        // Увеличиваем счетчик использованных подсказок
+        if (!piece.placed) {
+          setState((prev: any) => ({ ...prev, hintsUsed: prev.hintsUsed + 1 }));
+        }
+
+        // Автоматически скрываем подсказку через заданное время
+        setTimeout(() => {
+          setState((prev: any) => ({
+            ...prev,
+            activeHint: prev.activeHint === pieceId ? null : prev.activeHint,
+            showHintPanel: false,
+          }));
+        }, HINT_DURATION);
+      }
+    },
+    [state.activeHint, state.puzzlePieces, swiperPieces, setState, scrollToSlide]
+  );
+
+  const showHint = useCallback(() => {
+    // Находим первый неразмещенный кусочек
+    const unplacedPiece = state.puzzlePieces.find((p) => !p.placed);
+    if (unplacedPiece) {
+      showHintForPiece(unplacedPiece.id);
     }
+  }, [state.puzzlePieces, showHintForPiece]);
 
-    // Автоматически скрываем подсказку через определенное время
-    setTimeout(() => {
-      setActiveHint(null);
-      setShowHintPanel(false);
-    }, HINT_DURATION);
-  }, [activeHint, puzzlePieces, scrollToSlide]);
+  const getCompletionMessage = useCallback(
+    (timeSpent: number): string => {
+      const timeFormatted = formatTime(timeSpent);
 
-  // Функция для показа сообщения о завершении
+      let rating = '';
+      if (state.hintsUsed === 0) {
+        rating = 'Отлично! Вы справились без подсказок!';
+      } else if (state.hintsUsed <= 3) {
+        rating = 'Хороший результат! Вы использовали минимум подсказок.';
+      } else {
+        rating =
+          'Неплохо! В следующий раз попробуйте использовать меньше подсказок.';
+      }
+
+      return `Пазл собран! Время: ${timeFormatted}. Использовано подсказок: ${state.hintsUsed}. ${rating}`;
+    },
+    [state.hintsUsed, formatTime]
+  );
+
   const showCompletionMessage = useCallback(() => {
-    const message = getCompletionMessage(elapsedTime, hintsUsed);
-    setHintMessage(message);
-    setShowHintPanel(true);
-  }, [elapsedTime, hintsUsed]);
-
-  // Функция для сброса подсказок
-  const resetHints = useCallback(() => {
-    setHintsUsed(0);
-    setActiveHint(null);
-    setShowHintPanel(false);
-    setHintMessage('');
-  }, []);
+    const message = getCompletionMessage(state.elapsedTime);
+    setState((prev: any) => ({
+      ...prev,
+      hintMessage: message,
+      showHintPanel: true,
+    }));
+  }, [state.elapsedTime, setState, getCompletionMessage]);
 
   return {
-    hintsUsed,
-    activeHint,
-    showHintPanel,
-    hintMessage,
+    showHintForPiece,
     showHint,
     showCompletionMessage,
-    resetHints,
-    setHintMessage,
-    setShowHintPanel,
   };
-};
+}

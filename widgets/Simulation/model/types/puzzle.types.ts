@@ -1,60 +1,48 @@
 // widgets/Simulation/model/types/puzzle.types.ts
-import { World, Body } from 'planck-js';
+import type { RefObject } from 'react';
+import { Body, World } from 'planck';
 
-// Интерфейс для кусочка пазла
 export interface PuzzlePiece {
   id: number;
+  src: string;
+  correctX: number;
+  correctY: number;
   x: number;
   y: number;
   width: number;
   height: number;
-  targetX: number;
-  targetY: number;
   placed: boolean;
   inSwiper: boolean;
-  image: string; // Формат: "url#srcX,srcY,srcWidth,srcHeight"
+  returning?: boolean;
+  scale?: number;
 }
 
-// Интерфейс для состояния перетаскивания
-export interface DragState {
-  isDragging: boolean;
-  draggedPieceId: number | null;
-  dragStartX: number;
-  dragStartY: number;
+export interface BodyUserData {
+  id: number;
 }
 
-// Интерфейс для позиции мыши
-export interface MousePosition {
-  x: number;
-  y: number;
+export interface PuzzleProps {
+  restoreRef: RefObject<(() => void | null) | null>;
+  pagePath: string;
+  PIECE_SIZES: { width: number; height: number; scale?: number }[];
+  CORRECT_POSITIONS: { x: number; y: number }[];
 }
 
-// Интерфейс для состояния таймера
-export interface TimerState {
-  startTime: number;
-  elapsedTime: number;
-  isRunning: boolean;
+export interface PuzzleState {
+  puzzlePieces: PuzzlePiece[];
+  draggingPiece: number | null;
+  completedCount: number;
+  showHints: boolean;
+  activeHint: number | null;
+  hintsUsed: number;
+  puzzleCompleted: boolean;
+  hintMessage: string;
+  showHintPanel: boolean;
 }
 
-// Интерфейс для физических ссылок
 export interface PhysicsRefs {
   worldRef: React.MutableRefObject<World | null>;
   bodiesRef: React.MutableRefObject<Record<number, Body>>;
-  canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
-  initPhysicsWorld: () => void;
-  createPieceBody: (piece: PuzzlePiece) => Body;
-  updateBodyPosition: (pieceId: number, x: number, y: number) => void;
-  cleanupPhysicsWorld: () => void;
-}
-
-// Интерфейс для результатов завершения пазла
-export interface PuzzleCompletionResult {
-  time: number;
-  hintsUsed: number;
-}
-
-// Интерфейс для пропсов компонента Puzzle
-export interface PuzzleProps {
-  onComplete?: (result: PuzzleCompletionResult) => void;
-  restoreRef?: React.MutableRefObject<(() => void) | null>;
+  canvasRef: React.MutableRefObject<HTMLDivElement | null>;
+  animationRef: React.MutableRefObject<number | null>;
 }

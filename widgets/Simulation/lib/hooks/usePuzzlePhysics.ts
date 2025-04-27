@@ -1,155 +1,159 @@
 // widgets/Simulation/lib/hooks/usePuzzlePhysics.ts
-import { useRef, useEffect, useCallback } from 'react';
-import { World, Vec2, Body, Box, Edge } from 'planck-js';
-import { 
-  CANVAS_WIDTH, 
-  CANVAS_HEIGHT, 
-  CANVAS_PADDING,
-  PIECE_WIDTH,
-  PIECE_HEIGHT,
-  WORLD_SCALE,
-  PIECE_DENSITY,
-  PIECE_FRICTION,
-  PIECE_RESTITUTION
-} from '../../model/constants/puzzle.constants';
-import type { PuzzlePiece, PhysicsRefs } from '../../model/types/puzzle.types';
-import { pixelsToPhysics } from '../utils/puzzleUtils';
+import { useRef, useCallback } from 'react';
+import { World, Vec2, Edge, Box, Body } from 'planck';
+import type { PuzzlePiece, BodyUserData } from '../../model/types/puzzle.types';
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../../model/constants/puzzle.constants';
 
-export const usePuzzlePhysics = (): PhysicsRefs => {
-  // Рефы для хранения физического мира и тел
+export function usePuzzlePhysics() {
   const worldRef = useRef<World | null>(null);
   const bodiesRef = useRef<Record<number, Body>>({});
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const animationRef = useRef<number | null>(null);
 
-  // Инициализация физического мира
-  const initPhysicsWorld = useCallback(() => {
-    // Создаем мир с гравитацией (0, 0)
-    const world = World({
-      gravity: Vec2(0, 0),
-    });
+  const initPhysicsWorld = useCallback((pieceSizes: { width: number; height: number }[]) => {
+    worldRef.current = new World();
 
-    // Создаем границы мира (стенки)
-    const thickness = 10; // Толщина стенок
-    
-    // Верхняя граница
-    const topWall = world.createBody();
-    topWall.createFixture({
-      shape: Edge(
-        Vec2(pixelsToPhysics(0), pixelsToPhysics(0)),
-        Vec2(pixelsToPhysics(CANVAS_WIDTH), pixelsToPhysics(0))
-      ),
-      friction: 0.3,
-    });
+    // Находим максимальные размеры кусочков для учета при создании границ
+    const maxPieceWidth = Math.max(...pieceSizes.map((size) => size.width));
+    const maxPieceHeight = Math.max(...pieceSizes.map((size) => size.height));
+
+    const halfMaxWidth = maxPieceWidth / 2;
+    const halfMaxHeight = maxPieceHeight / 2;
 
     // Нижняя граница
-    const bottomWall = world.createBody();
-    bottomWall.createFixture({
-      shape: Edge(
-        Vec2(pixelsToPhysics(0), pixelsToPhysics(CANVAS_HEIGHT)),
-        Vec2(pixelsToPhysics(CANVAS_WIDTH), pixelsToPhysics(CANVAS_HEIGHT))
+    const ground = worldRef.current.createBody({
+      type: 'static',
+      position: new Vec2(0, CANVAS_HEIGHT - halfMaxHeight),
+    });
+    ground.createFixture({
+      shape: new Edge(
+        new Vec2(-CANVAS_WIDTH, 0),
+        new Vec2(CANVAS_WIDTH * 2, 0),
       ),
       friction: 0.3,
     });
 
-    // Левая граница
-    const leftWall = world.createBody();
+    // Верхняя граница
+    const ceiling = worldRef.current.createBody({
+      type: 'static',
+      position: new Vec2(0, halfMaxHeight),
+    });
+    ceiling.createFixture({
+      shape: new Edge(
+        new Vec2(-CANVAS_WIDTH, 0),
+        new Vec2(CANVAS_WIDTH * 2, 0),
+      ),
+      friction: 0.3,
+    });
+
+    // Левая стена
+    const leftWall = worldRef.current.createBody({
+      type: 'static',
+      position: new Vec2(halfMaxWidth, 0),
+    });
     leftWall.createFixture({
-      shape: Edge(
-        Vec2(pixelsToPhysics(0), pixelsToPhysics(0)),
-        Vec2(pixelsToPhysics(0), pixelsToPhysics(CANVAS_HEIGHT))
+      shape: new Edge(
+        new Vec2(0, -CANVAS_HEIGHT),
+        new Vec2(0, CANVAS_HEIGHT * 2),
       ),
       friction: 0.3,
     });
 
-    // Правая граница
-    const rightWall = world.createBody();
+    // Правая стена
+    const rightWall = worldRef.current.createBody({
+      type: 'static',
+      position: new Vec2(CANVAS_WIDTH - halfMaxWidth, 0),
+    });
     rightWall.createFixture({
-      shape: Edge(
-        Vec2(pixelsToPhysics(CANVAS_WIDTH), pixelsToPhysics(0)),
-        Vec2(pixelsToPhysics(CANVAS_WIDTH), pixelsToPhysics(CANVAS_HEIGHT))
+      shape: new Edge(
+        new Vec2(0, -CANVAS_HEIGHT),
+        new Vec2(0, CANVAS_HEIGHT * 2),
       ),
       friction: 0.3,
     });
 
-    worldRef.current = world;
+    startSimulation();
   }, []);
 
-  // Создание физического тела для кусочка пазла
-  const createPieceBody = useCallback((piece: PuzzlePiece): Body => {
-    if (!worldRef.current) {
-      throw new Error('Physics world is not initialized');
-    }
+  const createBodyForPiece = useCallback(
+    (piece: PuzzlePiece, x: number, y: number): Body => {
+      if (!worldRef.current) throw new Error('Physics world not initialized');
 
-    // Создаем тело
-    const body = worldRef.current.createDynamicBody({
-      position: Vec2(
-        pixelsToPhysics(piece.x + piece.width / 2),
-        pixelsToPhysics(piece.y + piece.height / 2)
-      ),
-      linearDamping: 0.5, // Затухание линейного движения
-      angularDamping: 0.5, // Затухание вращения
-    });
-
-    // Добавляем форму (прямоугольник)
-    body.createFixture({
-      shape: Box(
-        pixelsToPhysics(piece.width / 2),
-        pixelsToPhysics(piece.height / 2)
-      ),
-      density: PIECE_DENSITY,
-      friction: PIECE_FRICTION,
-      restitution: PIECE_RESTITUTION,
-    });
-
-    // Сохраняем тело в реф
-    bodiesRef.current[piece.id] = body;
-
-    return body;
-  }, []);
-
-  // Обновление позиции тела
-  const updateBodyPosition = useCallback((pieceId: number, x: number, y: number) => {
-    const body = bodiesRef.current[pieceId];
-    if (body) {
-      body.setPosition(Vec2(
-        pixelsToPhysics(x + PIECE_WIDTH / 2),
-        pixelsToPhysics(y + PIECE_HEIGHT / 2)
-      ));
-      body.setLinearVelocity(Vec2(0, 0)); // Сбрасываем скорость
-    }
-  }, []);
-
-  // Очистка физического мира
-  const cleanupPhysicsWorld = useCallback(() => {
-    if (worldRef.current) {
-      // Удаляем все тела
-      Object.values(bodiesRef.current).forEach(body => {
-        if (worldRef.current) {
-          worldRef.current.destroyBody(body);
-        }
+      const body = worldRef.current.createBody({
+        type: 'dynamic',
+        position: new Vec2(x, y),
+        linearDamping: 0.5,
+        angularDamping: 0.5,
       });
-      bodiesRef.current = {};
-      worldRef.current = null;
-    }
+
+      body.createFixture({
+        shape: new Box(piece.width / 2, piece.height / 2),
+        density: 1.0,
+        friction: 0.3,
+        restitution: 0.2,
+      });
+
+      body.setUserData({ id: piece.id } as BodyUserData);
+      bodiesRef.current[piece.id] = body;
+
+      return body;
+    },
+    []
+  );
+
+  const startSimulation = useCallback(() => {
+    const timeStep = 1 / 60;
+    const velocityIterations = 6;
+    const positionIterations = 2;
+
+    const step = (): void => {
+      if (worldRef.current) {
+        worldRef.current.step(timeStep, velocityIterations, positionIterations);
+        animationRef.current = requestAnimationFrame(step);
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(step);
   }, []);
 
-  // Инициализация физического мира при монтировании компонента
-  useEffect(() => {
-    initPhysicsWorld();
+  const cleanupPhysicsWorld = useCallback(() => {
+    if (animationRef.current !== null) {
+      cancelAnimationFrame(animationRef.current);
+    }
     
-    // Очистка при размонтировании
-    return () => {
-      cleanupPhysicsWorld();
-    };
-  }, [initPhysicsWorld, cleanupPhysicsWorld]);
+    // Удаляем все физические тела
+    if (worldRef.current) {
+      Object.values(bodiesRef.current).forEach((body) => {
+        worldRef.current?.destroyBody(body);
+      });
+    }
+    
+    worldRef.current = null;
+    bodiesRef.current = {};
+  }, []);
+
+  const clampPosition = useCallback(
+    (x: number, y: number, pieceWidth: number, pieceHeight: number) => {
+      const halfWidth = pieceWidth / 2;
+      const halfHeight = pieceHeight / 2;
+
+      const clampedX = Math.max(halfWidth, Math.min(CANVAS_WIDTH - halfWidth, x));
+      const clampedY = Math.max(halfHeight, Math.min(CANVAS_HEIGHT - halfHeight, y));
+
+      return new Vec2(clampedX, clampedY);
+    },
+    []
+  );
 
   return {
     worldRef,
     bodiesRef,
     canvasRef,
+    animationRef,
     initPhysicsWorld,
-    createPieceBody,
-    updateBodyPosition,
-    cleanupPhysicsWorld
+    createBodyForPiece,
+    startSimulation,
+    cleanupPhysicsWorld,
+    clampPosition,
   };
-};
+}

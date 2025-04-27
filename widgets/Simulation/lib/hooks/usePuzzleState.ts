@@ -1,66 +1,68 @@
 // widgets/Simulation/lib/hooks/usePuzzleState.ts
-import { useState, useEffect, useCallback } from 'react';
-import type { PuzzlePiece } from '../../model/types/puzzle.types';
-import { createInitialPieces } from '../utils/puzzleUtils';
+import { useState, useCallback } from 'react';
+import type { PuzzlePiece, PuzzleState } from '../../model/types/puzzle.types';
 
-export const usePuzzleState = () => {
-  // Состояния для кусочков пазла
-  const [puzzlePieces, setPuzzlePieces] = useState<PuzzlePiece[]>([]);
-  const [completedCount, setCompletedCount] = useState<number>(0);
-  const [puzzleCompleted, setPuzzleCompleted] = useState<boolean>(false);
+export function usePuzzleState(
+  initialPieces: PuzzlePiece[]
+): {
+  state: PuzzleState;
+  setState: React.Dispatch<React.SetStateAction<PuzzleState>>;
+  updatePuzzlePieces: (
+    updater: (prevPieces: PuzzlePiece[]) => PuzzlePiece[]
+  ) => void;
+  resetPuzzle: () => void;
+  createInitialPieces: () => PuzzlePiece[];
+  getSwiperPieces: () => PuzzlePiece[];
+} {
+  const [state, setState] = useState<PuzzleState>({
+    puzzlePieces: initialPieces,
+    draggingPiece: null,
+    completedCount: 0,
+    showHints: true,
+    activeHint: null,
+    hintsUsed: 0,
+    puzzleCompleted: false,
+    hintMessage: '',
+    showHintPanel: false,
+  });
 
-  // Инициализация кусочков пазла
-  useEffect(() => {
-    setPuzzlePieces(createInitialPieces());
-  }, []);
+  const updatePuzzlePieces = useCallback(
+    (updater: (prevPieces: PuzzlePiece[]) => PuzzlePiece[]) => {
+      setState((prevState) => ({
+        ...prevState,
+        puzzlePieces: updater(prevState.puzzlePieces),
+      }));
+    },
+    []
+  );
 
-  // Обработчик размещения кусочка
-  const handlePiecePlaced = useCallback((pieceId: number) => {
-    // Обновляем состояние кусочка
-    setPuzzlePieces((prevPieces) =>
-      prevPieces.map((piece) =>
-        piece.id === pieceId
-          ? { ...piece, placed: true, inSwiper: false }
-          : piece,
-      ),
-    );
-
-    // Увеличиваем счетчик завершенных кусочков
-    setCompletedCount((prev) => prev + 1);
-  }, []);
-
-  // Проверка завершения пазла
-  useEffect(() => {
-    if (
-      completedCount === puzzlePieces.length &&
-      puzzlePieces.length > 0 &&
-      !puzzleCompleted
-    ) {
-      setPuzzleCompleted(true);
-    }
-  }, [completedCount, puzzlePieces.length, puzzleCompleted]);
-
-  // Функция для сброса пазла
   const resetPuzzle = useCallback(() => {
-    setPuzzlePieces(createInitialPieces());
-    setCompletedCount(0);
-    setPuzzleCompleted(false);
-  }, []);
+    setState((prevState) => ({
+      ...prevState,
+      puzzlePieces: initialPieces,
+      draggingPiece: null,
+      completedCount: 0,
+      activeHint: null,
+      hintsUsed: 0,
+      puzzleCompleted: false,
+      showHintPanel: false,
+    }));
+  }, [initialPieces]);
 
-  // Получение кусочков для свайпера (неразмещенные и в свайпере)
+  const createInitialPieces = useCallback(() => {
+    return initialPieces;
+  }, [initialPieces]);
+
   const getSwiperPieces = useCallback(() => {
-    return puzzlePieces.filter((piece) => piece.inSwiper && !piece.placed);
-  }, [puzzlePieces]);
+    return state.puzzlePieces.filter((piece) => piece.inSwiper);
+  }, [state.puzzlePieces]);
 
   return {
-    puzzlePieces,
-    setPuzzlePieces,
-    completedCount,
-    setCompletedCount,
-    puzzleCompleted,
-    setPuzzleCompleted,
-    handlePiecePlaced,
+    state,
+    setState,
+    updatePuzzlePieces,
     resetPuzzle,
+    createInitialPieces,
     getSwiperPieces,
   };
-};
+}

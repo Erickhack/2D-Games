@@ -5,6 +5,7 @@ import { useRef, type RefObject } from 'react';
 import Tractor from './tractor';
 import { Radio } from './Radio';
 import { LightBulb } from './LightBulb';
+import { Puzzle } from './Puzzle';
 
 interface BaseProps {
   title: string;
@@ -44,7 +45,7 @@ const SwitcherSimulation = ({
   switch (props.simulation) {
     case 'puzl':
       return (
-        <Puzl
+        <Puzzle
           restoreRef={restoreRef}
           pagePath={props.puzlPathPage}
           CORRECT_POSITIONS={props.CORRECT_POSITIONS}

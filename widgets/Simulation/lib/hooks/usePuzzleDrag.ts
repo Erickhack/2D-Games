@@ -1,180 +1,211 @@
 // widgets/Simulation/lib/hooks/usePuzzleDrag.ts
-import { useState, useCallback } from 'react';
-import {
-  HINT_TOLERANCE,
-  CANVAS_PADDING,
-} from '../../model/constants/puzzle.constants';
-import type {
-  MousePosition,
-  DragState,
-  PuzzlePiece,
-} from '../../model/types/puzzle.types';
-import { isPieceNearTarget } from '../utils/puzzleUtils';
+import { useCallback } from 'react';
+import { Vec2, Body } from 'planck';
+import type { PuzzlePiece } from '../../model/types/puzzle.types';
+import { SNAP_THRESHOLD } from '../../model/constants/puzzle.constants';
 
-interface UsePuzzleDragProps {
-  puzzlePieces: PuzzlePiece[];
-  setPuzzlePieces: React.Dispatch<React.SetStateAction<PuzzlePiece[]>>;
-  updateBodyPosition: (pieceId: number, x: number, y: number) => void;
-  onPiecePlaced: (pieceId: number) => void;
-}
-
-export const usePuzzleDrag = ({
-  puzzlePieces,
-  setPuzzlePieces,
-  updateBodyPosition,
+export function usePuzzleDrag({
+  state,
+  setState,
+  updatePuzzlePieces,
+  bodiesRef,
+  worldRef,
+  canvasRef,
+  clampPosition,
+  createBodyForPiece,
   onPiecePlaced,
-}: UsePuzzleDragProps) => {
-  // Состояние для перетаскивания
-  const [dragState, setDragState] = useState<DragState>({
-    isDragging: false,
-    draggedPieceId: null,
-    dragStartX: 0,
-    dragStartY: 0,
-  });
+}: {
+  state: {
+    puzzlePieces: PuzzlePiece[];
+    draggingPiece: number | null;
+  };
+  setState: (state: any) => void;
+  updatePuzzlePieces: (updater: (prevPieces: PuzzlePiece[]) => PuzzlePiece[]) => void;
+  bodiesRef: React.MutableRefObject<Record<number, Body>>;
+  worldRef: React.MutableRefObject<any>;
+  canvasRef: React.MutableRefObject<HTMLDivElement | null>;
+  clampPosition: (x: number, y: number, width: number, height: number) => Vec2;
+  createBodyForPiece: (piece: PuzzlePiece, x: number, y: number) => Body;
+  onPiecePlaced: (pieceId: number) => void;
+}) {
+  const handleCanvasPieceMouseDown = useCallback(
+    (e: React.MouseEvent, pieceId: number): void => {
+      e.stopPropagation();
+      const piece = state.puzzlePieces.find((p) => p.id === pieceId);
+      if (!piece || piece.placed || piece.inSwiper) return;
 
-  // Состояние для позиции мыши
-  const [mousePosition, setMousePosition] = useState<MousePosition>({
-    x: 0,
-    y: 0,
-  });
+      setState((prev: any) => ({ ...prev, draggingPiece: pieceId }));
 
-  // Обработчик начала перетаскивания
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const canvas = e.currentTarget;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const body = bodiesRef.current[pieceId];
+      if (body) {
+        body.setType('kinematic');
+        body.setLinearVelocity(new Vec2(0, 0));
+        body.setAngularVelocity(0);
+      }
+    },
+    [state.puzzlePieces, setState, bodiesRef]
+  );
 
-      // Ищем кусочек под курсором (в обратном порядке, чтобы верхние кусочки имели приоритет)
-      for (let i = puzzlePieces.length - 1; i >= 0; i--) {
-        const piece = puzzlePieces[i];
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent): void => {
+      if (state.draggingPiece === null) return;
 
-        // Пропускаем уже размещенные кусочки
-        if (piece.placed) continue;
+      if (canvasRef.current) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-        // Проверяем, находится ли курсор над кусочком
-        if (
-          x >= piece.x &&
-          x <= piece.x + piece.width &&
-          y >= piece.y &&
-          y <= piece.y + piece.height
-        ) {
-          // Начинаем перетаскивание
-          setDragState({
-            isDragging: true,
-            draggedPieceId: piece.id,
-            dragStartX: x - piece.x,
-            dragStartY: y - piece.y,
-          });
+        const piece = state.puzzlePieces.find((p) => p.id === state.draggingPiece);
+        if (piece) {
+          const clampedPosition = clampPosition(x, y, piece.width, piece.height);
 
-          // Перемещаем выбранный кусочек в конец массива, чтобы он отрисовывался поверх других
-          setPuzzlePieces((prevPieces) => {
-            const newPieces = [...prevPieces];
-            const index = newPieces.findIndex((p) => p.id === piece.id);
-            const [draggedPiece] = newPieces.splice(index, 1);
-            newPieces.push({
-              ...draggedPiece,
-              inSwiper: false, // Кусочек больше не в свайпере
-            });
-            return newPieces;
-          });
-
-          break;
+          const body = bodiesRef.current[state.draggingPiece];
+          if (body) {
+            body.setPosition(clampedPosition);
+          }
         }
       }
     },
-    [puzzlePieces, setPuzzlePieces],
+    [state.draggingPiece, state.puzzlePieces, canvasRef, clampPosition, bodiesRef]
   );
 
-  // Обработчик перемещения мыши
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      const canvas = e.currentTarget as HTMLElement;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+  const placePieceCorrectly = useCallback(
+    (piece: PuzzlePiece, body: Body): void => {
+      body.setPosition(new Vec2(piece.correctX, piece.correctY));
+      body.setType('static');
 
-      setMousePosition({ x, y });
-
-      // Если перетаскиваем кусочек
-      if (dragState.isDragging && dragState.draggedPieceId !== null) {
-        // Обновляем позицию кусочка
-        const newX = x - dragState.dragStartX;
-        const newY = y - dragState.dragStartY;
-
-        setPuzzlePieces((prevPieces) =>
-          prevPieces.map((piece) =>
-            piece.id === dragState.draggedPieceId
-              ? { ...piece, x: newX, y: newY }
-              : piece,
-          ),
-        );
-
-        // Обновляем позицию физического тела
-        updateBodyPosition(dragState.draggedPieceId, newX, newY);
-      }
-    },
-    [dragState, setPuzzlePieces, updateBodyPosition],
-  );
-
-  // Обработчик окончания перетаскивания
-  const handleMouseUp = useCallback(() => {
-    if (dragState.isDragging && dragState.draggedPieceId !== null) {
-      const draggedPiece = puzzlePieces.find(
-        (piece) => piece.id === dragState.draggedPieceId,
+      updatePuzzlePieces((prevPieces) =>
+        prevPieces.map((p) =>
+          p.id === piece.id
+            ? {
+                ...p,
+                x: piece.correctX,
+                y: piece.correctY,
+                placed: true,
+                inSwiper: false,
+              }
+            : p
+        )
       );
 
-      if (draggedPiece) {
-        // Проверяем, находится ли кусочек рядом с целевой позицией
-        if (isPieceNearTarget(draggedPiece, HINT_TOLERANCE)) {
-          // Размещаем кусочек на целевой позиции
-          setPuzzlePieces((prevPieces) =>
-            prevPieces.map((piece) =>
-              piece.id === draggedPiece.id
-                ? {
-                    ...piece,
-                    x: piece.targetX,
-                    y: piece.targetY,
-                    placed: true,
-                  }
-                : piece,
-            ),
-          );
+      onPiecePlaced(piece.id);
+    },
+    [updatePuzzlePieces, onPiecePlaced]
+  );
 
-          // Обновляем позицию физического тела
-          updateBodyPosition(
-            draggedPiece.id,
-            draggedPiece.targetX,
-            draggedPiece.targetY,
-          );
+  const handleMouseUp = useCallback((): void => {
+    if (state.draggingPiece === null) return;
 
-          // Вызываем колбэк размещения кусочка
-          onPiecePlaced(draggedPiece.id);
+    const piece = state.puzzlePieces.find((p) => p.id === state.draggingPiece);
+    const body = bodiesRef.current[state.draggingPiece];
+
+    if (piece && body) {
+      const position = body.getPosition();
+      const distanceToCorrect = Math.sqrt(
+        Math.pow(position.x - piece.correctX, 2) +
+          Math.pow(position.y - piece.correctY, 2)
+      );
+
+      if (distanceToCorrect < SNAP_THRESHOLD) {
+        // Кусочек находится близко к правильной позиции
+        placePieceCorrectly(piece, body);
+      } else {
+        // Удаляем физическое тело
+        if (worldRef.current) {
+          worldRef.current.destroyBody(body);
+          delete bodiesRef.current[state.draggingPiece];
         }
+
+        // Анимируем возврат кусочка в Swiper
+        updatePuzzlePieces((prevPieces) =>
+          prevPieces.map((p) =>
+            p.id === piece.id
+              ? {
+                  ...p,
+                  x: position.x,
+                  y: position.y,
+                  inSwiper: true,
+                  returning: true,
+                }
+              : p
+          )
+        );
+
+        // Через небольшую задержку завершаем анимацию
+        setTimeout(() => {
+          updatePuzzlePieces((prevPieces) =>
+            prevPieces.map((p) =>
+              p.id === piece.id
+                ? {
+                    ...p,
+                    returning: false,
+                  }
+                : p
+            )
+          );
+        }, 500);
       }
     }
 
-    // Сбрасываем состояние перетаскивания
-    setDragState({
-      isDragging: false,
-      draggedPieceId: null,
-      dragStartX: 0,
-      dragStartY: 0,
-    });
+    setState((prev: any) => ({ ...prev, draggingPiece: null }));
   }, [
-    dragState,
-    puzzlePieces,
-    setPuzzlePieces,
-    updateBodyPosition,
-    onPiecePlaced,
+    state.draggingPiece,
+    state.puzzlePieces,
+    bodiesRef,
+    worldRef,
+    updatePuzzlePieces,
+    setState,
+    placePieceCorrectly,
   ]);
 
+  const handleSwiperPieceMouseDown = useCallback(
+    (e: React.MouseEvent, pieceId: number): void => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const piece = state.puzzlePieces.find((p) => p.id === pieceId);
+      if (!piece || piece.placed) return;
+
+      if (canvasRef.current) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const clampedPosition = clampPosition(x, y, piece.width, piece.height);
+
+        const body = createBodyForPiece(piece, clampedPosition.x, clampedPosition.y);
+
+        updatePuzzlePieces((prevPieces) =>
+          prevPieces.map((p) =>
+            p.id === pieceId
+              ? {
+                  ...p,
+                  x: clampedPosition.x,
+                  y: clampedPosition.y,
+                  inSwiper: false,
+                }
+              : p
+          )
+        );
+
+        setState((prev: any) => ({ ...prev, draggingPiece: pieceId }));
+        body.setType('kinematic');
+      }
+    },
+    [
+      state.puzzlePieces,
+      canvasRef,
+      clampPosition,
+      createBodyForPiece,
+      updatePuzzlePieces,
+      setState,
+    ]
+  );
+
   return {
-    dragState,
-    mousePosition,
-    handleMouseDown,
+    handleCanvasPieceMouseDown,
     handleMouseMove,
     handleMouseUp,
+    handleSwiperPieceMouseDown,
   };
-};
+}

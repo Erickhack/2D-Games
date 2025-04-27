@@ -1,9 +1,9 @@
 // widgets/Simulation/model/constants/puzzle.constants.ts
 
 // Размеры канваса
-export const CANVAS_WIDTH = 800;
-export const CANVAS_HEIGHT = 600;
-export const CANVAS_PADDING = 50;
+export const CANVAS_WIDTH = 1400;
+export const CANVAS_HEIGHT = 663;
+export const SNAP_THRESHOLD = 50;
 
 // Размеры кусочков пазла
 export const PIECE_WIDTH = 100;
@@ -44,3 +44,6 @@ export const GRID_SIZE = {
 
 // Общее количество кусочков
 export const TOTAL_PIECES = GRID_SIZE.COLS * GRID_SIZE.ROWS;
+
+export const SWIPER_HEIGHT = CANVAS_HEIGHT / 1.2;
+export const SWIPER_Y_POSITION = 50;

@@ -1,63 +1,51 @@
 // widgets/Simulation/lib/hooks/usePuzzleTimer.ts
-import { useState, useEffect, useCallback } from 'react';
-import type { TimerState } from '../../model/types/puzzle.types';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
-interface UsePuzzleTimerProps {
-  puzzleCompleted: boolean;
-}
+export function usePuzzleTimer() {
+  const [timerStarted, setTimerStarted] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-export const usePuzzleTimer = ({ puzzleCompleted }: UsePuzzleTimerProps) => {
-  // Состояния для таймера
-  const [startTime, setStartTime] = useState<number>(Date.now());
-  const [timerStarted, setTimerStarted] = useState<boolean>(false);
-  const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(
-    null,
-  );
+  // Функция для форматирования времени
+  const formatTime = useCallback((seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  }, []);
 
-  // Функция для запуска таймера
+  // Запуск таймера
   const startTimer = useCallback(() => {
-    if (timerStarted) return;
-
-    setStartTime(Date.now());
-    setTimerStarted(true);
-
-    const interval = setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
-
-    setTimerInterval(interval);
-  }, [timerStarted, startTime]);
-
-  // Функция для остановки таймера
-  const stopTimer = useCallback(() => {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      setTimerInterval(null);
+    if (!timerStarted) {
+      setTimerStarted(true);
+      timerRef.current = setInterval(() => {
+        setElapsedTime((prev) => prev + 1);
+      }, 1000);
     }
-  }, [timerInterval]);
+  }, [timerStarted]);
 
-  // Функция для сброса таймера
+  // Остановка таймера
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setTimerStarted(false);
+  }, []);
+
+  // Сброс таймера
   const resetTimer = useCallback(() => {
     stopTimer();
-    setTimerStarted(false);
     setElapsedTime(0);
-    setStartTime(Date.now());
   }, [stopTimer]);
 
-  // Останавливаем таймер при завершении пазла
-  useEffect(() => {
-    if (puzzleCompleted && timerStarted) {
-      stopTimer();
-    }
-  }, [puzzleCompleted, timerStarted, stopTimer]);
-
-  // Очищаем интервал при размонтировании
+  // Очистка при размонтировании
   useEffect(() => {
     return () => {
-      stopTimer();
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     };
-  }, [stopTimer]);
+  }, []);
 
   return {
     timerStarted,
@@ -65,5 +53,6 @@ export const usePuzzleTimer = ({ puzzleCompleted }: UsePuzzleTimerProps) => {
     startTimer,
     stopTimer,
     resetTimer,
+    formatTime,
   };
-};
+}

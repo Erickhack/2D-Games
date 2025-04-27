@@ -1,50 +1,34 @@
 // widgets/Simulation/ui/Puzzle/PuzzleStats.tsx
 import React from 'react';
+import Button from 'shared/buttons/ui/Button';
 
 interface PuzzleStatsProps {
   completedCount: number;
   totalPieces: number;
-  hintsUsed: number;
   onShowHint: () => void;
-  onReset: () => void;
 }
 
 export const PuzzleStats: React.FC<PuzzleStatsProps> = ({
   completedCount,
   totalPieces,
-  hintsUsed,
   onShowHint,
-  onReset
 }) => {
   return (
-    <div className="flex flex-col gap-4 absolute top-6 right-6">
-      <div className="bg-white rounded-md px-4 py-1.5 shadow">
-        <span className="text-xl text-blue-600">
-          Прогресс: {completedCount}/{totalPieces}
+    <>
+      <div className="absolute top-6 left-8 rounded-[6px] bg-white px-4 py-1.5">
+        <span className="text-[20px]/[130%] text-[#047EFD]">
+          Собрано: {completedCount}/{totalPieces}
         </span>
       </div>
-      
-      <div className="bg-white rounded-md px-4 py-1.5 shadow">
-        <span className="text-xl text-blue-600">
-          Подсказки: {hintsUsed}
-        </span>
-      </div>
-      
-      <div className="flex gap-2">
-        <button
+
+      <div className="absolute top-6 right-[230px] z-10">
+        <Button
           onClick={onShowHint}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          className="rounded-[6px] bg-white px-4 py-1.5 hover:bg-gray-100"
         >
-          Подсказка
-        </button>
-        
-        <button
-          onClick={onReset}
-          className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
-        >
-          Сбросить
-        </button>
+          <span className="text-[16px]/[130%] text-[#047EFD]">Подсказка</span>
+        </Button>
       </div>
-    </div>
+    </>
   );
 };
