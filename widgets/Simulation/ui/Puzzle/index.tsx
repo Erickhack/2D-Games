@@ -35,9 +35,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
     }),
   );
   const [draggingPiece, setDraggingPiece] = useState<number | null>(null);
-  const [completedCount, setCompletedCount] = useState<number>(
-    PREINSTALLED_PIECES.length,
-  );
+  const [completedCount, setCompletedCount] = useState<number>(PREINSTALLED_PIECES.length);
   const [showHints, setShowHints] = useState<boolean>(true);
   const [activeHint, setActiveHint] = useState<number | null>(null);
   const [hintsUsed, setHintsUsed] = useState<number>(0);
@@ -90,11 +88,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
 
   // Проверка завершения пазла
   useEffect(() => {
-    if (
-      completedCount === puzzlePieces.length &&
-      puzzlePieces.length > 0 &&
-      !puzzleCompleted
-    ) {
+    if (completedCount === puzzlePieces.length && puzzlePieces.length > 0 && !puzzleCompleted) {
       setPuzzleCompleted(true);
 
       setTimeout(() => {
@@ -157,8 +151,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
       } else if (hintsUsed <= 3) {
         rating = 'Хороший результат! Вы использовали минимум подсказок.';
       } else {
-        rating =
-          'Неплохо! В следующий раз попробуйте использовать меньше подсказок.';
+        rating = 'Неплохо! В следующий раз попробуйте использовать меньше подсказок.';
       }
 
       return `Пазл собран! Время: ${timeFormatted}. Использовано подсказок: ${hintsUsed}. ${rating}`;
@@ -171,14 +164,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
     (e: React.MouseEvent, pieceId: number): void => {
       e.stopPropagation();
       const piece = puzzlePieces.find((p) => p.id === pieceId);
-      if (!piece || piece.placed || piece.inSwiper) return;
-      if (
-        !piece ||
-        piece.placed ||
-        piece.inSwiper ||
-        PREINSTALLED_PIECES.includes(pieceId)
-      )
-        return;
+      if (!piece || piece.placed || piece.inSwiper || PREINSTALLED_PIECES.includes(pieceId)) return;
 
       setDraggingPiece(pieceId);
 
@@ -205,12 +191,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
         const piece = puzzlePieces.find((p) => p.id === draggingPiece);
         if (piece) {
           // Ограничиваем позицию в пределах canvas
-          const clampedPosition = clampPosition(
-            x,
-            y,
-            piece.width,
-            piece.height,
-          );
+          const clampedPosition = clampPosition(x, y, piece.width, piece.height);
 
           // Обновляем позицию тела
           const body = bodiesRef.current[draggingPiece];
@@ -224,29 +205,26 @@ export const Puzzle: React.FC<PuzzleProps> = ({
   );
 
   // Размещение кусочка в правильной позиции
-  const placePieceCorrectly = useCallback(
-    (piece: PuzzlePiece, body: Body): void => {
-      body.setPosition(Vec2(piece.correctX, piece.correctY));
-      body.setType('static');
+  const placePieceCorrectly = useCallback((piece: PuzzlePiece, body: Body): void => {
+    body.setPosition(Vec2(piece.correctX, piece.correctY));
+    body.setType('static');
 
-      setPuzzlePieces((prevPieces) =>
-        prevPieces.map((p) =>
-          p.id === piece.id
-            ? {
-                ...p,
-                x: piece.correctX,
-                y: piece.correctY,
-                placed: true,
-                inSwiper: false,
-              }
-            : p,
-        ),
-      );
+    setPuzzlePieces((prevPieces) =>
+      prevPieces.map((p) =>
+        p.id === piece.id
+          ? {
+              ...p,
+              x: piece.correctX,
+              y: piece.correctY,
+              placed: true,
+              inSwiper: false,
+            }
+          : p,
+      ),
+    );
 
-      setCompletedCount((prev) => prev + 1);
-    },
-    [],
-  );
+    setCompletedCount((prev) => prev + 1);
+  }, []);
 
   // Обработчик окончания перетаскивания
   const handleMouseUp = useCallback((): void => {
@@ -258,8 +236,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
     if (piece && body) {
       const position = body.getPosition();
       const distanceToCorrect = Math.sqrt(
-        Math.pow(position.x - piece.correctX, 2) +
-          Math.pow(position.y - piece.correctY, 2),
+        Math.pow(position.x - piece.correctX, 2) + Math.pow(position.y - piece.correctY, 2),
       );
 
       if (distanceToCorrect < SNAP_THRESHOLD) {
@@ -409,9 +386,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
       let optimalIndex = targetIndex;
 
       // Если целевой индекс находится в пределах текущего видимого окна, не прокручиваем
-      const isVisible =
-        targetIndex >= currentIndex &&
-        targetIndex < currentIndex + slidesPerView;
+      const isVisible = targetIndex >= currentIndex && targetIndex < currentIndex + slidesPerView;
 
       if (!isVisible) {
         // Если целевой индекс ниже текущего видимого окна
@@ -455,9 +430,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
       e.stopPropagation();
 
       const piece = puzzlePieces.find((p) => p.id === pieceId);
-      if (!piece || piece.placed) return;
-      if (!piece || piece.placed || PREINSTALLED_PIECES.includes(pieceId))
-        return;
+      if (!piece || piece.placed || PREINSTALLED_PIECES.includes(pieceId)) return;
 
       // Получаем позицию курсора относительно canvas
       if (canvasRef.current) {
@@ -469,11 +442,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
         const clampedPosition = clampPosition(x, y, piece.width, piece.height);
 
         // Создаем физическое тело для кусочка сразу в позиции курсора
-        const body = createBodyForPiece(
-          piece,
-          clampedPosition.x,
-          clampedPosition.y,
-        );
+        const body = createBodyForPiece(piece, clampedPosition.x, clampedPosition.y);
 
         // Обновляем состояние кусочка
         setPuzzlePieces((prevPieces) =>
@@ -494,13 +463,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
         body.setType('kinematic');
       }
     },
-    [
-      puzzlePieces,
-      canvasRef,
-      clampPosition,
-      createBodyForPiece,
-      PREINSTALLED_PIECES,
-    ],
+    [puzzlePieces, canvasRef, clampPosition, createBodyForPiece, PREINSTALLED_PIECES],
   );
 
   // Показ подсказки

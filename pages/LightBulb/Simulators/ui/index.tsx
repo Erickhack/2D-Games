@@ -20,7 +20,7 @@ const PIECE_SIZES = [
   { width: 1400, height: 60 },
   { width: 252, height: 252 },
   { width: 44, height: 209 },
-  { width: 252, height: 341 },
+  { width: 252, height: 341, scale: 0.3 },
   { width: 237, height: 126 },
   { width: 57, height: 19 },
   { width: 83, height: 174 },
