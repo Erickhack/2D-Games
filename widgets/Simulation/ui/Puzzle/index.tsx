@@ -13,7 +13,6 @@ import {
   SNAP_THRESHOLD,
 } from '../../model/constants/puzzle.constants';
 import { usePuzzlePhysics } from '../../lib/hooks/usePuzzlePhysics';
-import { usePuzzleTimer } from '../../lib/hooks/usePuzzleTimer';
 import { Vec2 } from 'planck-js';
 import type { Body } from 'planck';
 import { createInitialPieces } from 'widgets/Simulation/lib/utils/puzzleUtils';
@@ -61,8 +60,6 @@ export const Puzzle: React.FC<PuzzleProps> = ({
     clampPosition,
   } = usePuzzlePhysics();
 
-  const { elapsedTime, resetTimer, formatTime } = usePuzzleTimer();
-
   // Refs
   const swiperRef = useRef<SwiperType | null>(null);
 
@@ -100,12 +97,12 @@ export const Puzzle: React.FC<PuzzleProps> = ({
       setPuzzleCompleted(true);
 
       setTimeout(() => {
-        const message = getCompletionMessage(elapsedTime);
+        const message = getCompletionMessage();
         setHintMessage(message);
         setShowHintPanel(true);
       }, 500);
     }
-  }, [completedCount, puzzlePieceLength.current, puzzleCompleted, elapsedTime]);
+  }, [completedCount, puzzlePieceLength.current, puzzleCompleted]);
 
   // Обновление позиций кусочков пазла на основе физики
   const updatePiecePositions = useCallback(() => {
@@ -149,23 +146,18 @@ export const Puzzle: React.FC<PuzzleProps> = ({
   }, [worldRef, updatePiecePositions, animationRef]);
 
   // Получение сообщения о завершении
-  const getCompletionMessage = useCallback(
-    (timeSpent: number): string => {
-      const timeFormatted = formatTime(timeSpent);
+  const getCompletionMessage = useCallback((): string => {
+    let rating = '';
+    if (hintsUsed === 0) {
+      rating = 'Отлично! Вы справились без подсказок!';
+    } else if (hintsUsed <= 3) {
+      rating = 'Хороший результат! Вы использовали минимум подсказок.';
+    } else {
+      rating = 'Неплохо! В следующий раз попробуйте использовать меньше подсказок.';
+    }
 
-      let rating = '';
-      if (hintsUsed === 0) {
-        rating = 'Отлично! Вы справились без подсказок!';
-      } else if (hintsUsed <= 3) {
-        rating = 'Хороший результат! Вы использовали минимум подсказок.';
-      } else {
-        rating = 'Неплохо! В следующий раз попробуйте использовать меньше подсказок.';
-      }
-
-      return `Пазл собран! Время: ${timeFormatted}. Использовано подсказок: ${hintsUsed}. ${rating}`;
-    },
-    [hintsUsed, formatTime],
-  );
+    return `Пазл собран! Использовано подсказок: ${hintsUsed}. ${rating}`;
+  }, [hintsUsed]);
 
   // Обработчик начала перетаскивания с canvas
   const handleCanvasPieceMouseDown = useCallback(
@@ -299,7 +291,6 @@ export const Puzzle: React.FC<PuzzleProps> = ({
     setActiveHint(null);
     setPuzzleCompleted(false);
     setShowHintPanel(false);
-    resetTimer();
 
     // Удаляем все физические тела
     Object.values(bodiesRef.current).forEach((body) => {
@@ -319,7 +310,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
         AFTERFINISH_PIECES,
       }),
     );
-  }, [bodiesRef, worldRef, resetTimer]);
+  }, [bodiesRef, worldRef]);
 
   // Функция для показа подсказки для конкретного кусочка
   const showHintForPiece = useCallback(
@@ -349,7 +340,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
 
             // Показываем сообщение подсказки
             setHintMessage(
-              `Найдите этот кусочек в слайдере справа и перетащите его на подсвеченное место`,
+              `Найдите этот деталь в слайдере справа и перетащите его на подсвеченное место`,
             );
           }
         } else {
