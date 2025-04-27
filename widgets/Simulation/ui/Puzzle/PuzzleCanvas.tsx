@@ -10,6 +10,7 @@ interface PuzzleCanvasProps {
   handleCanvasPieceMouseDown: (e: React.MouseEvent, pieceId: number) => void;
   showHintForPiece: (pieceId: number) => void;
   showHints: boolean;
+  preinstalledPieces: number[];
 }
 
 export const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
@@ -34,7 +35,7 @@ export const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
           top: piece.correctY - piece.height / 2,
           width: piece.width,
           height: piece.height,
-          backgroundImage: `url(/puzl/hints/${pagePath}/piece${piece.id}.svg)`,
+          backgroundImage: `url(/puzl/pieces/${pagePath}/piece${piece.id}.svg)`,
           backgroundSize: 'contain',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -54,25 +55,18 @@ export const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     return (
       <div
         key={`canvas-piece-${piece.id}`}
-        className={`absolute cursor-grab ${piece.placed ? 'cursor-default' : ''}`}
+        className={`absolute cursor-grab bg-contain bg-center bg-no-repeat ${piece.placed ? 'cursor-default' : ''}`}
         style={{
           left: piece.x - piece.width / 2,
           top: piece.y - piece.height / 2,
           width: piece.width,
           height: piece.height,
           backgroundImage: `url(${piece.src})`,
-          backgroundSize: 'contain',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          transition:
-            piece.placed || piece.returning ? 'all 0.5s ease' : 'none',
+          transition: piece.placed || piece.returning ? 'all 0.5s ease' : 'none',
           zIndex: draggingPiece === piece.id ? 10 : 1,
           opacity: piece.returning ? '0' : '1',
           transform: piece.returning ? 'scale(0.4)' : 'scale(1)',
-          border:
-            activeHint === piece.id && !piece.placed
-              ? '2px solid #4CAF50'
-              : 'none',
+          border: activeHint === piece.id && !piece.placed ? '2px solid #4CAF50' : 'none',
         }}
         onMouseDown={(e) => handleCanvasPieceMouseDown(e, piece.id)}
       />

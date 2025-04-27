@@ -35,7 +35,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
     }),
   );
   const [draggingPiece, setDraggingPiece] = useState<number | null>(null);
-  const [completedCount, setCompletedCount] = useState<number>(PREINSTALLED_PIECES.length);
+  const [completedCount, setCompletedCount] = useState<number>(0);
   const [showHints, setShowHints] = useState<boolean>(true);
   const [activeHint, setActiveHint] = useState<number | null>(null);
   const [hintsUsed, setHintsUsed] = useState<number>(0);
@@ -70,7 +70,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
     initPhysicsWorld(PIECE_SIZES);
 
     // Сброс статистики
-    setCompletedCount(PREINSTALLED_PIECES.length);
+    setCompletedCount(0);
     setHintsUsed(0);
     setPuzzleCompleted(false);
     setShowHintPanel(false);
@@ -286,7 +286,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
   // Функция сброса пазла
   const resetPuzzle = useCallback((): void => {
     // Сброс состояний
-    setCompletedCount(PREINSTALLED_PIECES.length);
+    setCompletedCount(0);
     setHintsUsed(0);
     setActiveHint(null);
     setPuzzleCompleted(false);
@@ -502,13 +502,13 @@ export const Puzzle: React.FC<PuzzleProps> = ({
           handleCanvasPieceMouseDown={handleCanvasPieceMouseDown}
           showHintForPiece={showHintForPiece}
           showHints={showHints}
-          // preinstalledPieces={PREINSTALLED_PIECES}
+          preinstalledPieces={PREINSTALLED_PIECES}
         />
 
         {/* Статистика */}
         <PuzzleStats
           completedCount={completedCount}
-          totalPieces={puzzlePieces.length}
+          totalPieces={puzzlePieces.length - PREINSTALLED_PIECES.length}
           onShowHint={showHint}
         />
 
