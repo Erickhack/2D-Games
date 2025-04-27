@@ -19,7 +19,7 @@ const PIECE_SIZES = [
 
 export default function TractorSimulationPage() {
   return (
-    <section className="flex flex-col justify-center gap-11 p-5 pt-16 pb-4">
+    <section className="flex flex-col justify-center gap-11 pt-16 pb-[320px]">
       <div>
         <Simulation
           title="1. Пазл"

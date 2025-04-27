@@ -1,8 +1,5 @@
 import { Simulation } from 'widgets/Simulation/ui';
-import {
-  descriptoinOfSimulation1,
-  descriptoinOfSimulation2,
-} from '../model/texts';
+import { descriptoinOfSimulation1, descriptoinOfSimulation2 } from '../model/texts';
 
 const CORRECT_POSITIONS = [
   { x: 586, y: 325 },
@@ -24,7 +21,7 @@ const PIECE_SIZES = [
 
 export default function RadioSimulatorsPage() {
   return (
-    <section className="flex flex-col justify-center gap-11 p-5 pt-16 pb-4">
+    <section className="flex flex-col justify-center gap-11 pt-16 pb-[320px]">
       <div>
         <Simulation
           title="1. Пазл"

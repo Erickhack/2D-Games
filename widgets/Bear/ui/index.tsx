@@ -47,19 +47,18 @@ export const Bear = () => {
       >
         <BearSVG />
         <div
-          className={`absolute top-[120px] left-[-220px] w-[250px] rounded-[15px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition-transform delay-200 duration-300 ${active ? 'scale-100' : 'scale-0'}`}
+          className={`absolute top-[120px] left-[-220px] w-[380px] rounded-[15px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition-transform delay-200 duration-300 ${active ? 'scale-100' : 'scale-0'}`}
         >
           <span className="text-black">Привет! Что будем искать?</span>
-          <div className="mt-3.5 flex flex-col gap-2.5">
+          <div className="relative mt-3.5 flex flex-col gap-2.5">
             <input
               className="w-full rounded-xl border-1 border-[#E2E8F0] p-2.5 text-base text-black transition-colors duration-300 outline-none placeholder:text-gray-500 focus:border-[#046cfd]"
               type="text"
               placeholder="Введите запрос..."
             />
 
-            <Button className="flex w-max gap-2.5 px-6 py-2 hover:bg-[#046cfd]">
+            <Button className="absolute top-1.5 right-1.5 bottom-1.5 flex w-max gap-2.5 px-3 py-2 hover:bg-[#046cfd]">
               <SearchSVG />
-              <span>Найти</span>
             </Button>
           </div>
         </div>

@@ -79,7 +79,7 @@ export default function Footer() {
         <span className="text-[#8987A1]">
           Открой для себя великие достижения России
         </span>
-        <ul className="flex gap-6">
+        {/* <ul className="flex gap-6">
           <li>
             <Link1 />
           </li>
@@ -89,7 +89,7 @@ export default function Footer() {
           <li>
             <Link3 />
           </li>
-        </ul>
+        </ul> */}
       </div>
     </div>
   );
