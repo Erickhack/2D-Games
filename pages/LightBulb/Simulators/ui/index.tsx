@@ -37,6 +37,7 @@ export default function LightBulbSimulationPage() {
           puzlPathPage="light-bulb"
           CORRECT_POSITIONS={CORRECT_POSITIONS}
           PIECE_SIZES={PIECE_SIZES}
+          preinstalledPieces={[1]}
         />
       </div>
       <div>

@@ -18,6 +18,7 @@ interface PuzlProps extends BaseProps {
   puzlPathPage: string;
   PIECE_SIZES: { width: number; height: number }[];
   CORRECT_POSITIONS: { x: number; y: number }[];
+  preinstalledPieces?: number[];
 }
 
 interface TractorProps extends BaseProps {
@@ -50,6 +51,7 @@ const SwitcherSimulation = ({
           pagePath={props.puzlPathPage}
           CORRECT_POSITIONS={props.CORRECT_POSITIONS}
           PIECE_SIZES={props.PIECE_SIZES}
+          PREINSTALLED_PIECES={props.preinstalledPieces}
         />
       );
     case 'tractor':

@@ -26,6 +26,7 @@ export interface PuzzleProps {
   pagePath: string;
   PIECE_SIZES: { width: number; height: number; scale?: number }[];
   CORRECT_POSITIONS: { x: number; y: number }[];
+  PREINSTALLED_PIECES?: number[]; // ID кусочков, которые уже установлены
 }
 
 export interface PuzzleState {

@@ -23,6 +23,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
   restoreRef,
   PIECE_SIZES,
   CORRECT_POSITIONS,
+  PREINSTALLED_PIECES = [],
 }) => {
   // Состояния
   const [puzzlePieces, setPuzzlePieces] = useState<PuzzlePiece[]>(
@@ -30,10 +31,13 @@ export const Puzzle: React.FC<PuzzleProps> = ({
       CORRECT_POSITIONS,
       pagePath,
       PIECE_SIZES,
+      PREINSTALLED_PIECES,
     }),
   );
   const [draggingPiece, setDraggingPiece] = useState<number | null>(null);
-  const [completedCount, setCompletedCount] = useState<number>(0);
+  const [completedCount, setCompletedCount] = useState<number>(
+    PREINSTALLED_PIECES.length,
+  );
   const [showHints, setShowHints] = useState<boolean>(true);
   const [activeHint, setActiveHint] = useState<number | null>(null);
   const [hintsUsed, setHintsUsed] = useState<number>(0);
@@ -58,15 +62,17 @@ export const Puzzle: React.FC<PuzzleProps> = ({
   // Refs
   const swiperRef = useRef<SwiperType | null>(null);
 
-  // Получаем кусочки для Swiper
-  const swiperPieces = puzzlePieces.filter((piece) => piece.inSwiper);
+  // Обновление фильтрации для swiperPieces
+  const swiperPieces = puzzlePieces.filter(
+    (piece) => piece.inSwiper && !PREINSTALLED_PIECES.includes(piece.id),
+  );
 
   // Инициализация физического мира
   useEffect(() => {
     initPhysicsWorld(PIECE_SIZES);
 
     // Сброс статистики
-    setCompletedCount(0);
+    setCompletedCount(PREINSTALLED_PIECES.length);
     setHintsUsed(0);
     setPuzzleCompleted(false);
     setShowHintPanel(false);
@@ -166,6 +172,13 @@ export const Puzzle: React.FC<PuzzleProps> = ({
       e.stopPropagation();
       const piece = puzzlePieces.find((p) => p.id === pieceId);
       if (!piece || piece.placed || piece.inSwiper) return;
+      if (
+        !piece ||
+        piece.placed ||
+        piece.inSwiper ||
+        PREINSTALLED_PIECES.includes(pieceId)
+      )
+        return;
 
       setDraggingPiece(pieceId);
 
@@ -176,7 +189,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
         body.setAngularVelocity(0);
       }
     },
-    [puzzlePieces, bodiesRef],
+    [puzzlePieces, bodiesRef, PREINSTALLED_PIECES],
   );
 
   // Обработчик перетаскивания
@@ -296,7 +309,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
   // Функция сброса пазла
   const resetPuzzle = useCallback((): void => {
     // Сброс состояний
-    setCompletedCount(0);
+    setCompletedCount(PREINSTALLED_PIECES.length);
     setHintsUsed(0);
     setActiveHint(null);
     setPuzzleCompleted(false);
@@ -313,13 +326,19 @@ export const Puzzle: React.FC<PuzzleProps> = ({
 
     // Сброс позиций кусочков
     setPuzzlePieces(
-      createInitialPieces({ CORRECT_POSITIONS, pagePath, PIECE_SIZES }),
+      createInitialPieces({
+        CORRECT_POSITIONS,
+        pagePath,
+        PIECE_SIZES,
+        PREINSTALLED_PIECES,
+      }),
     );
   }, [bodiesRef, worldRef, resetTimer]);
 
   // Функция для показа подсказки для конкретного кусочка
   const showHintForPiece = useCallback(
     (pieceId: number): void => {
+      if (PREINSTALLED_PIECES.includes(pieceId)) return;
       // Если подсказка уже активна для этого кусочка, скрываем ее
       if (activeHint === pieceId) {
         setActiveHint(null);
@@ -367,7 +386,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
         setShowHintPanel(false);
       }, HINT_DURATION);
     },
-    [activeHint, puzzlePieces, swiperPieces],
+    [activeHint, puzzlePieces, swiperPieces, PREINSTALLED_PIECES],
   );
 
   // Функция для прокрутки свайпера к определенному слайду
@@ -437,6 +456,8 @@ export const Puzzle: React.FC<PuzzleProps> = ({
 
       const piece = puzzlePieces.find((p) => p.id === pieceId);
       if (!piece || piece.placed) return;
+      if (!piece || piece.placed || PREINSTALLED_PIECES.includes(pieceId))
+        return;
 
       // Получаем позицию курсора относительно canvas
       if (canvasRef.current) {
@@ -473,17 +494,24 @@ export const Puzzle: React.FC<PuzzleProps> = ({
         body.setType('kinematic');
       }
     },
-    [puzzlePieces, canvasRef, clampPosition, createBodyForPiece],
+    [
+      puzzlePieces,
+      canvasRef,
+      clampPosition,
+      createBodyForPiece,
+      PREINSTALLED_PIECES,
+    ],
   );
 
   // Показ подсказки
   const showHint = useCallback(() => {
-    // Находим первый неразмещенный кусочек
-    const unplacedPiece = puzzlePieces.find((p) => !p.placed);
+    const unplacedPiece = puzzlePieces.find(
+      (p) => !p.placed && !PREINSTALLED_PIECES.includes(p.id),
+    );
     if (unplacedPiece) {
       showHintForPiece(unplacedPiece.id);
     }
-  }, [puzzlePieces, showHintForPiece]);
+  }, [puzzlePieces, showHintForPiece, PREINSTALLED_PIECES]);
 
   return (
     <div
@@ -511,6 +539,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
           handleCanvasPieceMouseDown={handleCanvasPieceMouseDown}
           showHintForPiece={showHintForPiece}
           showHints={showHints}
+          // preinstalledPieces={PREINSTALLED_PIECES}
         />
 
         {/* Статистика */}
