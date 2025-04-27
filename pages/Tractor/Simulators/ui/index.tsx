@@ -1,16 +1,23 @@
 import { Simulation } from 'widgets/Simulation/ui';
-import {
-  descriptoinOfSimulation1,
-  descriptoinOfSimulation2,
-} from '../model/texts';
+import { descriptoinOfSimulation1, descriptoinOfSimulation2 } from '../model/texts';
 
-interface IProps {
-  puzlSourcePath: string;
-  PIECE_SIZES: { width: number; height: number }[];
-  CORRECT_POSITIONS: { x: number; y: number }[];
-}
+const CORRECT_POSITIONS = [
+  { x: 600, y: 510 },
+  { x: 665, y: 326 },
+  { x: 465, y: 336 },
+  { x: 600, y: 430 },
+  { x: 869, y: 480 },
+];
 
-export default function TractorSimulationPage(props: IProps) {
+const PIECE_SIZES = [
+  { width: 500, height: 106 },
+  { width: 288, height: 215 },
+  { width: 123, height: 145 },
+  { width: 532, height: 89 },
+  { width: 31, height: 104 },
+];
+
+export default function TractorSimulationPage() {
   return (
     <section className="flex flex-col justify-center gap-11 p-5 pt-16 pb-4">
       <div>
@@ -18,9 +25,9 @@ export default function TractorSimulationPage(props: IProps) {
           title="1. Пазл"
           description={descriptoinOfSimulation1}
           simulation="puzl"
-          puzlPathPage={props.puzlSourcePath}
-          CORRECT_POSITIONS={props.CORRECT_POSITIONS}
-          PIECE_SIZES={props.PIECE_SIZES}
+          puzlPathPage="tractor"
+          CORRECT_POSITIONS={CORRECT_POSITIONS}
+          PIECE_SIZES={PIECE_SIZES}
         />
       </div>
       <div>

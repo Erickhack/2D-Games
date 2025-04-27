@@ -6,6 +6,7 @@ interface IProps {
   PIECE_SIZES: { width: number; height: number; scale?: number }[];
   CORRECT_POSITIONS: { x: number; y: number }[];
   PREINSTALLED_PIECES?: number[];
+  AFTERFINISH_PIECES?: number[];
 }
 
 export function createInitialPieces({
@@ -13,9 +14,21 @@ export function createInitialPieces({
   PIECE_SIZES,
   pagePath,
   PREINSTALLED_PIECES = [],
+  AFTERFINISH_PIECES = [],
 }: IProps): PuzzlePiece[] {
   return PIECE_SIZES.map((size, index) => {
-    const isPreinstalled = PREINSTALLED_PIECES.includes(index);
+    let placed = false;
+    let inSwiper = true;
+
+    const preinstall = PREINSTALLED_PIECES.includes(index);
+    if (preinstall) {
+      (placed = true), (inSwiper = false);
+    }
+
+    const afterinstall = AFTERFINISH_PIECES.includes(index);
+    if (afterinstall) {
+      (placed = true), (inSwiper = false);
+    }
 
     return {
       id: index + 1,
@@ -26,9 +39,10 @@ export function createInitialPieces({
       y: CORRECT_POSITIONS[index].y,
       width: size.width,
       height: size.height,
-      placed: isPreinstalled,
-      inSwiper: !isPreinstalled,
+      placed,
+      inSwiper,
       scale: size.scale,
+      hidden: afterinstall,
     };
   });
 }

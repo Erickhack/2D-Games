@@ -1,8 +1,5 @@
 import { Simulation } from 'widgets/Simulation/ui';
-import {
-  descriptoinOfSimulation1,
-  descriptoinOfSimulation2,
-} from '../model/texts';
+import { descriptoinOfSimulation1, descriptoinOfSimulation2 } from '../model/texts';
 
 const CORRECT_POSITIONS = [
   { x: 1400 / 2 + 141, y: 532 },
@@ -38,6 +35,7 @@ export default function LightBulbSimulationPage() {
           CORRECT_POSITIONS={CORRECT_POSITIONS}
           PIECE_SIZES={PIECE_SIZES}
           preinstalledPieces={[1]}
+          afterinstalledPieces={[2]}
         />
       </div>
       <div>

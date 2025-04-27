@@ -19,6 +19,7 @@ interface PuzlProps extends BaseProps {
   PIECE_SIZES: { width: number; height: number }[];
   CORRECT_POSITIONS: { x: number; y: number }[];
   preinstalledPieces?: number[];
+  afterinstalledPieces?: number[];
 }
 
 interface TractorProps extends BaseProps {
@@ -52,6 +53,7 @@ const SwitcherSimulation = ({
           CORRECT_POSITIONS={props.CORRECT_POSITIONS}
           PIECE_SIZES={props.PIECE_SIZES}
           PREINSTALLED_PIECES={props.preinstalledPieces}
+          AFTERFINISH_PIECES={props.afterinstalledPieces}
         />
       );
     case 'tractor':
@@ -84,9 +86,7 @@ export const Simulation = (props: IProps) => {
       </div>
 
       <div>
-        <span className="text-[20px]/[130%] text-[#1B1A22]">
-          {props.description}
-        </span>
+        <span className="text-[20px]/[130%] text-[#1B1A22]">{props.description}</span>
       </div>
 
       <SwitcherSimulation props={props} restoreRef={restoreRef} />

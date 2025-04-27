@@ -24,6 +24,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
   PIECE_SIZES,
   CORRECT_POSITIONS,
   PREINSTALLED_PIECES = [],
+  AFTERFINISH_PIECES = [],
 }) => {
   // Состояния
   const [puzzlePieces, setPuzzlePieces] = useState<PuzzlePiece[]>(
@@ -32,8 +33,13 @@ export const Puzzle: React.FC<PuzzleProps> = ({
       pagePath,
       PIECE_SIZES,
       PREINSTALLED_PIECES,
+      AFTERFINISH_PIECES,
     }),
   );
+  const puzzlePieceLength = useRef(
+    puzzlePieces.length - PREINSTALLED_PIECES.length - AFTERFINISH_PIECES.length,
+  );
+
   const [draggingPiece, setDraggingPiece] = useState<number | null>(null);
   const [completedCount, setCompletedCount] = useState<number>(0);
   const [showHints, setShowHints] = useState<boolean>(true);
@@ -61,9 +67,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
   const swiperRef = useRef<SwiperType | null>(null);
 
   // Обновление фильтрации для swiperPieces
-  const swiperPieces = puzzlePieces.filter(
-    (piece) => piece.inSwiper && !PREINSTALLED_PIECES.includes(piece.id),
-  );
+  const swiperPieces = puzzlePieces.filter((piece) => piece.inSwiper);
 
   // Инициализация физического мира
   useEffect(() => {
@@ -88,7 +92,11 @@ export const Puzzle: React.FC<PuzzleProps> = ({
 
   // Проверка завершения пазла
   useEffect(() => {
-    if (completedCount === puzzlePieces.length && puzzlePieces.length > 0 && !puzzleCompleted) {
+    if (
+      completedCount === puzzlePieceLength.current &&
+      puzzlePieceLength.current > 0 &&
+      !puzzleCompleted
+    ) {
       setPuzzleCompleted(true);
 
       setTimeout(() => {
@@ -97,7 +105,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
         setShowHintPanel(true);
       }, 500);
     }
-  }, [completedCount, puzzlePieces.length, puzzleCompleted, elapsedTime]);
+  }, [completedCount, puzzlePieceLength.current, puzzleCompleted, elapsedTime]);
 
   // Обновление позиций кусочков пазла на основе физики
   const updatePiecePositions = useCallback(() => {
@@ -308,6 +316,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
         pagePath,
         PIECE_SIZES,
         PREINSTALLED_PIECES,
+        AFTERFINISH_PIECES,
       }),
     );
   }, [bodiesRef, worldRef, resetTimer]);
@@ -430,7 +439,7 @@ export const Puzzle: React.FC<PuzzleProps> = ({
       e.stopPropagation();
 
       const piece = puzzlePieces.find((p) => p.id === pieceId);
-      if (!piece || piece.placed || PREINSTALLED_PIECES.includes(pieceId)) return;
+      if (!piece || piece.placed) return;
 
       // Получаем позицию курсора относительно canvas
       if (canvasRef.current) {
@@ -503,12 +512,13 @@ export const Puzzle: React.FC<PuzzleProps> = ({
           showHintForPiece={showHintForPiece}
           showHints={showHints}
           preinstalledPieces={PREINSTALLED_PIECES}
+          puzzleCompleted={puzzleCompleted}
         />
 
         {/* Статистика */}
         <PuzzleStats
           completedCount={completedCount}
-          totalPieces={puzzlePieces.length - PREINSTALLED_PIECES.length}
+          totalPieces={puzzlePieceLength.current - PREINSTALLED_PIECES.length}
           onShowHint={showHint}
         />
 

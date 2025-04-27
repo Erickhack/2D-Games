@@ -11,6 +11,7 @@ interface PuzzleCanvasProps {
   showHintForPiece: (pieceId: number) => void;
   showHints: boolean;
   preinstalledPieces: number[];
+  puzzleCompleted: boolean;
 }
 
 export const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
@@ -21,6 +22,7 @@ export const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
   handleCanvasPieceMouseDown,
   showHintForPiece,
   showHints,
+  puzzleCompleted,
 }) => {
   // Рендеринг подсказки для кусочка
   const renderHint = (piece: PuzzlePiece) => {
@@ -55,7 +57,7 @@ export const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     return (
       <div
         key={`canvas-piece-${piece.id}`}
-        className={`absolute cursor-grab bg-contain bg-center bg-no-repeat ${piece.placed ? 'cursor-default' : ''}`}
+        className={`absolute cursor-grab bg-contain bg-center bg-no-repeat ${piece.placed ? 'cursor-default' : ''} ${piece.hidden && !puzzleCompleted ? 'hidden' : ''}`}
         style={{
           left: piece.x - piece.width / 2,
           top: piece.y - piece.height / 2,

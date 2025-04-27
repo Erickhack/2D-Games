@@ -15,6 +15,7 @@ export interface PuzzlePiece {
   inSwiper: boolean;
   returning?: boolean;
   scale?: number;
+  hidden: boolean;
 }
 
 export interface BodyUserData {
@@ -27,6 +28,7 @@ export interface PuzzleProps {
   PIECE_SIZES: { width: number; height: number; scale?: number }[];
   CORRECT_POSITIONS: { x: number; y: number }[];
   PREINSTALLED_PIECES?: number[]; // ID кусочков, которые уже установлены
+  AFTERFINISH_PIECES?: number[];
 }
 
 export interface PuzzleState {

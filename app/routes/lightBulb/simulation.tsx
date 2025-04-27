@@ -23,11 +23,5 @@ const PIECE_SIZES = [
 ];
 
 export default function Simulation() {
-  return (
-    <LightBulbSimulationPage
-      CORRECT_POSITIONS={CORRECT_POSITIONS}
-      PIECE_SIZES={PIECE_SIZES}
-      puzlSourcePath="light-bulb"
-    />
-  );
+  return <LightBulbSimulationPage />;
 }
