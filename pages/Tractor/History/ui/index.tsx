@@ -1,7 +1,7 @@
 import AuthorCard from 'widgets/AuthorCard';
 import Paragrapg from 'widgets/Paragpaph/ui';
-import { section1, section2, section3 } from '../model';
-
+import { section1, section2 } from '../model';
+import { TitleParagrapg } from 'widgets/TitleParagrapg';
 export default function TractorHistoryPage() {
   return (
     <section className="mb-[135px] flex justify-center gap-11 p-5 pt-16 pb-4">
@@ -16,21 +16,23 @@ export default function TractorHistoryPage() {
       </aside>
 
       <article className="basis-[1032px]">
-        <Paragrapg
-          title="Гусеничный трактор"
-          sections={[
-            { id: 1, text: section1 },
-            { id: 2, text: section2 },
-            {
-              id: 3,
-              image: {
-                source: '/tractor/history/schema.png',
-                text: 'Чертеж устройства гусеничного хода. Современный рисунок',
+        <div className="flex flex-col gap-10">
+          <TitleParagrapg title="Фёдор Блинов и рождение гусеничного трактора" />
+
+          <Paragrapg
+            sections={[
+              { id: 1, text: section1 },
+              {
+                id: 2,
+                image: {
+                  source: '/tractor/history/schema.png',
+                  text: 'Чертеж устройства гусеничного хода. Современный рисунок',
+                },
               },
-            },
-            { id: 4, text: section3 },
-          ]}
-        />
+              { id: 3, text: section2 },
+            ]}
+          />
+        </div>
       </article>
     </section>
   );

@@ -1,5 +1,12 @@
 import { Simulation } from 'widgets/Simulation/ui';
-import { descriptoinOfSimulation1, descriptoinOfSimulation2 } from '../model/texts';
+import {
+  descriptoinOfSimulation1,
+  descriptoinOfSimulation2,
+  section1,
+  section2,
+  section3,
+} from '../model/texts';
+import Paragrapg from 'widgets/Paragpaph/ui';
 
 const CORRECT_POSITIONS = [
   { x: 600, y: 510 },
@@ -20,23 +27,28 @@ const PIECE_SIZES = [
 export default function TractorSimulationPage() {
   return (
     <section className="flex flex-col justify-center gap-11 pt-16 pb-[320px]">
-      <div>
-        <Simulation
-          title="1. Пазл"
-          description={descriptoinOfSimulation1}
-          simulation="puzl"
-          puzlPathPage="tractor"
-          CORRECT_POSITIONS={CORRECT_POSITIONS}
-          PIECE_SIZES={PIECE_SIZES}
-        />
-      </div>
-      <div>
-        <Simulation
-          title="2. Симуляция"
-          description={descriptoinOfSimulation2}
-          simulation="tractor"
-        />
-      </div>
+      <Simulation
+        title="Интерактивная задача:"
+        description={descriptoinOfSimulation1}
+        simulation="puzl"
+        puzlPathPage="tractor"
+        CORRECT_POSITIONS={CORRECT_POSITIONS}
+        PIECE_SIZES={PIECE_SIZES}
+      />
+
+      <Paragrapg
+        sections={[
+          { id: 1, text: section1 },
+          { id: 2, text: section2 },
+          { id: 3, text: section3 },
+        ]}
+      />
+
+      <Simulation
+        title="Интерактивное исследование:"
+        description={descriptoinOfSimulation2}
+        simulation="tractor"
+      />
     </section>
   );
 }
