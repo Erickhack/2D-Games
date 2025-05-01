@@ -1,6 +1,7 @@
 import AuthorCard from 'widgets/AuthorCard';
 import Paragrapg from 'widgets/Paragpaph/ui';
-import { section1, section2, section3, section4, section5 } from '../model';
+import { section1, section2, section3, section4, section5, section6, section7 } from '../model';
+import { TitleParagrapg } from 'widgets/TitleParagrapg';
 
 export default function LightBulbHistoryPage() {
   return (
@@ -17,9 +18,10 @@ export default function LightBulbHistoryPage() {
         />
       </aside>
 
-      <article className="basis-[1032px]">
+      <article className="flex basis-[1032px] flex-col gap-10">
+        <TitleParagrapg title="Свеча Яблочкова: история первой дуговой лампы и её создателя" />
+
         <Paragrapg
-          title="140 лет назад русский ученый Яблочков изобрел лампу накаливани"
           sections={[
             { id: 1, text: section1 },
             { id: 2, text: section2 },
@@ -33,6 +35,8 @@ export default function LightBulbHistoryPage() {
             { id: 5, text: section3 },
             { id: 6, text: section4 },
             { id: 7, text: section5 },
+            { id: 8, text: section6 },
+            { id: 9, text: section7 },
           ]}
         />
       </article>
