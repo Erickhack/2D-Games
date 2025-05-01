@@ -6,13 +6,8 @@ import {
   section3,
   section4,
   section5,
-  section6,
-  section7,
-  section8,
-  section9,
-  section10,
-  section11,
 } from '../model';
+import { TitleParagrapg } from 'widgets/TitleParagrapg';
 
 export default function RadioHistoryPage() {
   return (
@@ -29,29 +24,17 @@ export default function RadioHistoryPage() {
         />
       </aside>
 
-      <article className="basis-[1032px]">
+      <article className="flex basis-[1032px] flex-col gap-10">
+        <TitleParagrapg title="Александр Попов и рождение радио." />
+
         <Paragrapg
           sections={[
             { id: 1, text: section1 },
             { id: 2, text: section2 },
             { id: 3, text: section3 },
             { id: 4, text: section4 },
-            { id: 5, list: section5 },
-            { id: 6, text: section6 },
-            { id: 7, text: section7 },
-            { id: 8, text: section8 },
-            { id: 9, text: section9 },
-            { id: 10, list: section10 },
-            { id: 11, text: section11 },
-            {
-              id: 12,
-              image: {
-                source: '/radio/history/schema.png',
-                text: '',
-              },
-            },
+            { id: 5, text: section5 },
           ]}
-          title="7 мая — День радио: история великого изобретения"
         />
       </article>
     </main>

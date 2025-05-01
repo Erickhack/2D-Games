@@ -15,24 +15,22 @@ export default function TractorHistoryPage() {
         />
       </aside>
 
-      <article className="basis-[1032px]">
-        <div className="flex flex-col gap-10">
-          <TitleParagrapg title="Фёдор Блинов и рождение гусеничного трактора" />
+      <article className="flex basis-[1032px] flex-col gap-10">
+        <TitleParagrapg title="Фёдор Блинов и рождение гусеничного трактора" />
 
-          <Paragrapg
-            sections={[
-              { id: 1, text: section1 },
-              {
-                id: 2,
-                image: {
-                  source: '/tractor/history/schema.png',
-                  text: 'Чертеж устройства гусеничного хода. Современный рисунок',
-                },
+        <Paragrapg
+          sections={[
+            { id: 1, text: section1 },
+            {
+              id: 2,
+              image: {
+                source: '/tractor/history/schema.png',
+                text: 'Чертеж устройства гусеничного хода. Современный рисунок',
               },
-              { id: 3, text: section2 },
-            ]}
-          />
-        </div>
+            },
+            { id: 3, text: section2 },
+          ]}
+        />
       </article>
     </section>
   );
