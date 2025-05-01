@@ -64,7 +64,7 @@ const PartCards = (props: IParts) => {
 export const VerticalWrapped: FC<IProps> = ({ cards, title }) => {
   return (
     <div className="flex flex-col gap-[42px]">
-      <h1 className="text-5xl font-bold text-[#252432]">{title}</h1>
+      <h1 className="text-5xl font-bold text-[#252432] md-verticalwrapped-h1">{title}</h1>
       <div className="flex flex-col gap-8 md-verticalwrapped-div-1">
         <PartCards cards={cards[0]} index={0} />
         <PartCards cards={cards[1]} index={1} />

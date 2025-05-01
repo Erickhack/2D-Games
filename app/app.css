@@ -87,6 +87,9 @@ html::-webkit-scrollbar {
     .md-verticalwrapped-div-1 {
       flex-direction: unset;
     }
+    .md-verticalwrapped-h1 {
+      font-size: 32px;
+    }
   }
 
   @media (min-width: 834px) {
