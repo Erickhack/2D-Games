@@ -1,7 +1,7 @@
 export const Banner = () => {
   return (
-    <div className="relative z-10 flex h-screen w-full items-center justify-center">
-      <div className="flex flex-col items-center text-center text-[64px]/[100%] font-bold">
+    <div className="relative z-10 flex h-screen w-full items-center justify-center md-banner">
+      <div className="md-banner-contain flex flex-col items-center text-center text-[64px]/[100%] font-bold">
         <div className="max-w-[989px]">
           <span>Открой для себя великие достижения России</span>
         </div>

@@ -67,6 +67,12 @@ html::-webkit-scrollbar {
     .md-logo-icon {
       transform: scale(0.7308);
     }
+    .md-banner {
+      height: 347px;
+    }
+    .md-banner-contain {
+      font-size: 37.09px;
+    }
   }
 
   @media (min-width: 834px) {
