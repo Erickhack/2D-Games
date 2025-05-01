@@ -70,8 +70,22 @@ html::-webkit-scrollbar {
     .md-banner {
       height: 347px;
     }
+    .md-banner-span-1 {
+      max-width: 572px;
+    }
     .md-banner-contain {
       font-size: 37.09px;
+    }
+    .md-partcards {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+    }
+    .md-partcards-list {
+      grid-column: auto;
+      grid-row: auto;
+    }
+    .md-verticalwrapped-div-1 {
+      flex-direction: unset;
     }
   }
 

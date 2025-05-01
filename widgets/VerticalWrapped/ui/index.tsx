@@ -28,11 +28,11 @@ const PartCards = (props: IParts) => {
   ];
 
   return (
-    <ul className="grid grid-cols-12 gap-8">
+    <ul className="grid grid-cols-12 gap-8 md-partcards">
       {props.cards.map((card, index) => (
         <li
           className={
-            'flex flex-col gap-6 rounded-3xl bg-white p-[18px]' +
+            'flex flex-col gap-6 rounded-3xl bg-white p-[18px] md-partcards-list' +
             ' ' +
             `${CardSize[props.index][index]}`
           }
@@ -65,7 +65,7 @@ export const VerticalWrapped: FC<IProps> = ({ cards, title }) => {
   return (
     <div className="flex flex-col gap-[42px]">
       <h1 className="text-5xl font-bold text-[#252432]">{title}</h1>
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 md-verticalwrapped-div-1">
         <PartCards cards={cards[0]} index={0} />
         <PartCards cards={cards[1]} index={1} />
       </div>
