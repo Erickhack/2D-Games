@@ -4,7 +4,7 @@ import { popularCards } from '../model';
 
 function MainPage() {
   return (
-    <main className="flex flex-col gap-[220px] px-[42px]">
+    <main className="flex flex-col gap-[220px] px-[42px] sm-main">
       <Banner />
 
       <VerticalWrapped cards={popularCards} title="Популярное за неделю" />

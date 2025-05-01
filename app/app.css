@@ -70,7 +70,7 @@ html::-webkit-scrollbar {
     .md-banner {
       height: 347px;
     }
-    .md-banner-span-1 {
+    .md-banner-div-1 {
       max-width: 572px;
     }
     .md-banner-contain {
@@ -128,6 +128,30 @@ html::-webkit-scrollbar {
     .sm-main-layout-div-1 {
       left: -187.84px;
       right: -267.54px;
+    }
+    .sm-banner-div-1 {
+      max-width: 350px;
+    }
+    .sm-banner-contain {
+      font-size: 28px;
+    }
+    .sm-banner-span-1 {
+      display: none;
+    }
+    .sm-banner {
+      width: 100%;
+    }
+    .sm-main {
+      padding: 0;
+    }
+    .sm-verticalwrapped {
+      padding: 0 20px 0 16px;
+    }
+    .sm-verticalwrapped-div-1 {
+      flex-direction: column;
+    }
+    .sm-verticalwrapped-h1 {
+      font-size: 32px;
     }
   }
 }
