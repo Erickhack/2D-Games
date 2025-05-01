@@ -1,10 +1,8 @@
 import { type RouteConfig, index, route } from '@react-router/dev/routes';
 
 export default [
-  // route('', 'layouts/DashboardLayout.tsx', [index('routes/home.tsx')]),
-  route('', 'layouts/RootLayout.tsx', [
-    // Main route
-    index('routes/home.tsx'),
+  route('', 'layouts/MainLayout.tsx', [index('routes/home.tsx')]),
+  route('/*', 'layouts/RootLayout.tsx', [
     // Radio Route
     route('radio', 'routes/radio/index.tsx'),
     // route('radio/history', 'routes/radio/history.tsx'),

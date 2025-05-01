@@ -43,11 +43,10 @@ export const Bear = () => {
 
       <div
         ref={bearContainerRef} // Присваиваем ссылку на контейнер
-        className={`absolute right-0 bottom-0 transition-transform delay-200 duration-300 ${active ? 'translate-x-0' : 'translate-x-100'}`}
+        className={`absolute right-0 bottom-0 h-[300px] w-[300px] transition-transform delay-200 duration-300 ${active ? 'translate-x-0' : 'translate-x-100'}`}
       >
-        <BearSVG />
         <div
-          className={`absolute top-[120px] left-[-220px] w-[380px] rounded-[15px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition-transform delay-200 duration-300 ${active ? 'scale-100' : 'scale-0'}`}
+          className={`absolute right-[20px] bottom-[20px] w-[380px] rounded-[15px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition-transform delay-200 duration-300 ${active ? 'scale-100' : 'scale-0'}`}
         >
           <span className="text-black">Привет! Что будем искать?</span>
           <div className="relative mt-3.5 flex flex-col gap-2.5">
@@ -61,6 +60,8 @@ export const Bear = () => {
               <SearchSVG />
             </Button>
           </div>
+
+          <Button className="size-6 absolute right-4 top-4" onClick={handleActive}>X</Button>
         </div>
       </div>
     </div>

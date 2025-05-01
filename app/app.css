@@ -2,8 +2,8 @@
 
 @theme {
   --font-sans:
-    'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
 *,
@@ -33,6 +33,80 @@ html::-webkit-scrollbar {
     box-shadow: 0 0 0 2px #4caf50;
     animation: pulse-green 1.5s infinite;
   }
+
+  @media (max-width: 834px) {
+    .md-search-input {
+      display: none;
+    }
+
+    .md-search-btn {
+      height: 40px;
+      position: static;
+    }
+
+    .md-search-contain {
+      flex-basis: auto;
+      justify-self: end;
+      align-items: center;
+      display: flex;
+    }
+
+    .md-header-div-1 {
+      display: none;
+    }
+
+    .md-menu {
+      padding: 9px 32px;
+      height: 40px;
+    }
+
+    .md-header-div-2 {
+      display: flex;
+    }
+
+    .md-logo-icon {
+      transform: scale(0.7308);
+    }
+  }
+
+  @media (min-width: 834px) {
+    .md-header-div-1 {
+      display: flex;
+    }
+
+    .md-header-div-2 {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .sm-menu {
+      height: 40px;
+      width: 40px;
+      padding: 0;
+    }
+    .sm-menu-span {
+      display: none;
+    }
+
+    .sm-search-btn {
+      height: 40px;
+      width: 40px;
+      padding: 0;
+    }
+
+    .sm-logo {
+      height: 38px;
+    }
+
+    .sm-logo-text {
+      font-size: 16px;
+    }
+    .sm-main-layout-div-1 {
+      left: -187.84px;
+      right: -267.54px;
+    }
+  }
 }
 
 @keyframes pulse-green {
@@ -45,4 +119,8 @@ html::-webkit-scrollbar {
   100% {
     box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
   }
+}
+
+* {
+  outline: 1px solid rgba(0, 255, 0, 0.3); /* тонкая зелёная рамка */
 }

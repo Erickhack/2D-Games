@@ -6,7 +6,6 @@ import React, {
   type MouseEvent,
 } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import clsx from 'clsx';
 import { colorMap } from '../../model/lightBulb';
 import ActiveLight from './ActiveLight';
 import Light from './Light';
