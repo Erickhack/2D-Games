@@ -108,6 +108,17 @@ html::-webkit-scrollbar {
     .md-title-paragraph {
       gap: 62px;
     }
+    .md-title-paragraph-h1 {
+      font-size: 32px;
+      line-height: 100%;
+    }
+    .md-author-swiper {
+      width: 285px;
+      height: 406px;
+    }
+    .md-history-section {
+      gap: 18px;
+    }
   }
 
   @media (min-width: 834px) {
@@ -174,6 +185,20 @@ html::-webkit-scrollbar {
     }
     .sm-verticalwrapped-h1 {
       font-size: 32px;
+    }
+    .sm-history-section {
+      flex-direction: column-reverse;
+    }
+    .sm-article-page {
+      flex-basis: auto;
+    }
+    .sm-author-swiper {
+      max-width: 640px;
+      width: 100%;
+      height: 100%;
+    }
+    .sm-author-card {
+      width: 100%;
     }
   }
 }

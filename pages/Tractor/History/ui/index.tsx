@@ -5,7 +5,7 @@ import { TitleParagrapg } from 'widgets/TitleParagrapg';
 
 export default function TractorHistoryPage() {
   return (
-    <section className="flex justify-center gap-11 p-5 pt-16 pb-4">
+    <section className="sm-history-section md-history-section flex justify-center gap-11 p-5 pt-16 pb-4">
       <aside className="md-aside flex min-h-screen basis-2xs">
         <AuthorCard
           images={[
@@ -16,7 +16,7 @@ export default function TractorHistoryPage() {
         />
       </aside>
 
-      <article className="flex basis-[1032px] flex-col gap-10">
+      <article className="flex basis-[1032px] flex-col gap-10 sm-article-page">
         <TitleParagrapg title="Фёдор Блинов и рождение гусеничного трактора" />
 
         <div className="md-paragraph-reverse">

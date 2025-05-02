@@ -17,7 +17,9 @@ export const TitleParagrapg: FC<IProps> = (props) => {
   return (
     <div className="lg-title-paragraph md-title-paragraph flex justify-between gap-8">
       <div className="flex max-w-[674px] flex-col gap-5">
-        <h1 className="text-5xl/[58px] font-semibold text-[#1B1A22]">{props.title}</h1>
+        <h1 className="md-title-paragraph-h1 text-5xl/[58px] font-semibold text-[#1B1A22]">
+          {props.title}
+        </h1>
 
         <ul className="flex max-w-[674px] flex-wrap gap-2">
           {list.map((text, index) => (

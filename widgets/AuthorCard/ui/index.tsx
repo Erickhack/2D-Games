@@ -33,10 +33,10 @@ export default function AuthorCard(props: IProps) {
   };
 
   return (
-    <div className="sticky top-5 self-start">
+    <div className="sm-author-card sticky top-5 self-start">
       <div className="relative rounded-xl">
         <Swiper
-          className="h-[465px] w-[326px]"
+          className="md-author-swiper sm-author-swiper h-[465px] w-[326px]"
           spaceBetween={42}
           ref={swiperRef}
           onSlideChange={handleSlideChange}
@@ -44,7 +44,7 @@ export default function AuthorCard(props: IProps) {
           {props.images.map((image, index) => (
             <SwiperSlide key={index}>
               <img
-                className="h-full w-full object-cover rounded-xl"
+                className="h-full w-full rounded-xl object-cover"
                 src={image}
                 alt={`Slide ${index + 1}`}
               />
@@ -77,9 +77,7 @@ export default function AuthorCard(props: IProps) {
         </div>
       </div>
       <div>
-        <span className="text-2xl/relaxed font-medium text-[#00000080]">
-          Федор Блинов
-        </span>
+        <span className="text-2xl/relaxed font-medium text-[#00000080]">Федор Блинов</span>
       </div>
     </div>
   );
