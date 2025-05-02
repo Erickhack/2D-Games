@@ -3,11 +3,10 @@ import { TractorSimulationPage } from 'pages/Tractor/Simulators';
 
 export default function Tractor() {
   return (
-    <main className="max-w-[1400px] mx-auto">
+    <main className="mx-auto max-w-[1400px] px-5">
       <TractorHistoryPage />
 
-      <TractorSimulationPage
-      />
+      <TractorSimulationPage />
     </main>
   );
 }

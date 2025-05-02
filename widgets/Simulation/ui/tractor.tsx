@@ -1,18 +1,8 @@
 import React, { useEffect, useRef, useState, type RefObject } from 'react';
 import * as planck from 'planck-js';
-import {
-  CONFIG,
-  type VehicleType,
-  type WheelType,
-  type TerrainType,
-} from '../model';
+import { CONFIG, type VehicleType, type WheelType, type TerrainType } from '../model';
 import { TractorController } from './TractorController';
-import {
-  createDecorations,
-  createTerrain,
-  createVehicle,
-  createWheels,
-} from '../lib/create';
+import { createDecorations, createTerrain, createVehicle, createWheels } from '../lib/create';
 import {
   renderDebugInfo,
   renderDecorations,
@@ -65,12 +55,7 @@ const Tractor: React.FC<Tractor> = () => {
 
   // Загрузка изображений
   useEffect(() => {
-    logDebug(
-      'Loading images for vehicle:',
-      vehicleType,
-      'and wheel:',
-      wheelType,
-    );
+    logDebug('Loading images for vehicle:', vehicleType, 'and wheel:', wheelType);
 
     const imagesToLoad = [
       { key: 'vehicle', path: CONFIG.vehicle[vehicleType].imagePath },
@@ -94,9 +79,7 @@ const Tractor: React.FC<Tractor> = () => {
       const img = new Image();
       img.onload = () => {
         loadedCount++;
-        logDebug(
-          `Image loaded: ${key} (${loadedCount}/${imagesToLoad.length})`,
-        );
+        logDebug(`Image loaded: ${key} (${loadedCount}/${imagesToLoad.length})`);
         if (loadedCount === imagesToLoad.length) {
           logDebug('All images loaded successfully');
           setImagesLoaded(true);
@@ -284,9 +267,7 @@ const Tractor: React.FC<Tractor> = () => {
       // ~1% вероятность (примерно каждые 100 кадров)
       if (vehicleBodyRef.current) {
         const velocity = vehicleBodyRef.current.getLinearVelocity();
-        const speed = Math.sqrt(
-          velocity.x * velocity.x + velocity.y * velocity.y,
-        );
+        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
         const position = vehicleBodyRef.current.getPosition();
 
         logDebug('Vehicle state:', {
@@ -299,9 +280,7 @@ const Tractor: React.FC<Tractor> = () => {
         // Проверяем состояние моторов
         motorJointsRef.current.forEach((joint, index) => {
           try {
-            const motorSpeed = joint.getMotorSpeed
-              ? joint.getMotorSpeed()
-              : 'N/A';
+            const motorSpeed = joint.getMotorSpeed ? joint.getMotorSpeed() : 'N/A';
             logDebug(`Motor ${index} speed:`, motorSpeed);
           } catch (e) {
             // Игнорируем ошибки здесь, чтобы не спамить консоль
@@ -313,8 +292,7 @@ const Tractor: React.FC<Tractor> = () => {
 
   // Отрисовка
   const render = () => {
-    if (!canvasRef.current || !vehicleBodyRef.current || !worldRef.current)
-      return;
+    if (!canvasRef.current || !vehicleBodyRef.current || !worldRef.current) return;
 
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
@@ -324,13 +302,7 @@ const Tractor: React.FC<Tractor> = () => {
 
     // Отрисовка фона
     if (imagesRef.current.background) {
-      ctx.drawImage(
-        imagesRef.current.background,
-        0,
-        0,
-        CONFIG.canvas.width,
-        CONFIG.canvas.height,
-      );
+      ctx.drawImage(imagesRef.current.background, 0, 0, CONFIG.canvas.width, CONFIG.canvas.height);
     }
 
     // Отрисовка поверхностей
@@ -454,13 +426,10 @@ const Tractor: React.FC<Tractor> = () => {
   return (
     <div className="flex flex-col items-center justify-center pt-8 pb-4">
       <div
-        className="relative"
-        style={{ width: CONFIG.canvas.width, height: CONFIG.canvas.height }}
+        className="relative max-w-[1400px]"
+        //  ={{ width: CONFIG.canvas.width, height: CONFIG.canvas.height }}
       >
-        <TractorController
-          switchTransport={switchTransport}
-          switchTerrain={switchTerrain}
-        />
+        <TractorController switchTransport={switchTransport} switchTerrain={switchTerrain} />
 
         <div className="absolute right-8 bottom-6 flex gap-4">
           <div className="flex h-[82px] w-[82px] flex-col items-center justify-center rounded-[17.18px] border-2 border-[#FFFFFF33] bg-[##FFFFFF33] backdrop-blur-[2px]">

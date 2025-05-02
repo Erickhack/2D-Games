@@ -1,6 +1,5 @@
 import Button from 'shared/buttons/ui/Button';
 import { ResetSVG } from 'shared/svgs/ui/reset';
-import { Puzl } from './puzl';
 import { useRef, type RefObject } from 'react';
 import Tractor from './tractor';
 import { Radio } from './Radio';

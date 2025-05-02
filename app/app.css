@@ -34,6 +34,12 @@ html::-webkit-scrollbar {
     animation: pulse-green 1.5s infinite;
   }
 
+  @media (max-width: 1024px) {
+    .lg-title-paragraph {
+      flex-direction: column-reverse;
+    }
+  }
+
   @media (max-width: 834px) {
     .md-search-input {
       display: none;
@@ -90,6 +96,15 @@ html::-webkit-scrollbar {
     .md-verticalwrapped-h1 {
       font-size: 32px;
     }
+    .md-paragraph-reverse {
+      display: none;
+    }
+    .md-aside {
+      min-height: fit-content;
+    }
+    .md-simulations {
+      padding-bottom: 68px;
+    }
   }
 
   @media (min-width: 834px) {
@@ -98,6 +113,10 @@ html::-webkit-scrollbar {
     }
 
     .md-header-div-2 {
+      display: none;
+    }
+
+    .md-paragraph {
       display: none;
     }
   }
@@ -168,6 +187,6 @@ html::-webkit-scrollbar {
   }
 }
 
-/* * {
+* {
   outline: 1px solid rgba(0, 255, 0, 0.3);
-} */
+}
