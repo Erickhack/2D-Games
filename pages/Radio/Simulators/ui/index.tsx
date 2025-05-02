@@ -43,16 +43,6 @@ export default function RadioSimulatorsPage() {
 
   return (
     <section className="md-simulations flex flex-col justify-center gap-11 pb-[320px]">
-      <If conditional={screenSize !== null && screenSize >= 1400}>
-        <Simulation
-          title="1. Интерактивное задание"
-          description={descriptoinOfSimulation1}
-          simulation="puzl"
-          puzlPathPage="radio"
-          CORRECT_POSITIONS={CORRECT_POSITIONS}
-          PIECE_SIZES={PIECE_SIZES}
-        />
-      </If>
       <div className="md-paragraph">
         <Paragrapg
           sections={[
@@ -64,6 +54,16 @@ export default function RadioSimulatorsPage() {
           ]}
         />
       </div>
+      <If conditional={screenSize !== null && screenSize >= 1400}>
+        <Simulation
+          title="1. Интерактивное задание"
+          description={descriptoinOfSimulation1}
+          simulation="puzl"
+          puzlPathPage="radio"
+          CORRECT_POSITIONS={CORRECT_POSITIONS}
+          PIECE_SIZES={PIECE_SIZES}
+        />
+      </If>
       <Paragrapg
         sections={[
           { id: 1, text: section6 },
