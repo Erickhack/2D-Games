@@ -105,6 +105,9 @@ html::-webkit-scrollbar {
     .md-simulations {
       padding-bottom: 68px;
     }
+    .md-title-paragraph {
+      gap: 62px;
+    }
   }
 
   @media (min-width: 834px) {

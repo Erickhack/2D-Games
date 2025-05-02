@@ -15,7 +15,7 @@ interface IProps {
 
 export const TitleParagrapg: FC<IProps> = (props) => {
   return (
-    <div className="lg-title-paragraph flex justify-between gap-8">
+    <div className="lg-title-paragraph md-title-paragraph flex justify-between gap-8">
       <div className="flex max-w-[674px] flex-col gap-5">
         <h1 className="text-5xl/[58px] font-semibold text-[#1B1A22]">{props.title}</h1>
 

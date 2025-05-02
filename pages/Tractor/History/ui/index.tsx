@@ -2,6 +2,7 @@ import AuthorCard from 'widgets/AuthorCard';
 import Paragrapg from 'widgets/Paragpaph/ui';
 import { section1, section2 } from '../model';
 import { TitleParagrapg } from 'widgets/TitleParagrapg';
+
 export default function TractorHistoryPage() {
   return (
     <section className="flex justify-center gap-11 p-5 pt-16 pb-4">
