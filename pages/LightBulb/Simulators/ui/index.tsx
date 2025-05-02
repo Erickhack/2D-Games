@@ -4,6 +4,13 @@ import {
   descriptoinOfSimulation2,
   section1,
   section10,
+  section11,
+  section12,
+  section13,
+  section14,
+  section15,
+  section16,
+  section17,
   section2,
   section3,
   section4,
@@ -14,6 +21,8 @@ import {
   section9,
 } from '../model/texts';
 import { Paragrapg } from 'widgets/Paragpaph';
+import { useResize } from 'feature/hooks';
+import { If } from 'shared/components/if/ui';
 
 const CORRECT_POSITIONS = [
   { x: 1400 / 2 + 141, y: 532 },
@@ -38,18 +47,43 @@ const PIECE_SIZES = [
 ];
 
 export default function LightBulbSimulationPage() {
+  const screenSize = useResize();
+
   return (
-    <section className="flex flex-col justify-center gap-11 pt-16 pb-[320px]">
-      <Simulation
-        title="1. Интерактивное задание"
-        description={descriptoinOfSimulation1}
-        simulation="puzl"
-        puzlPathPage="light-bulb"
-        CORRECT_POSITIONS={CORRECT_POSITIONS}
-        PIECE_SIZES={PIECE_SIZES}
-        preinstalledPieces={[1]}
-        afterinstalledPieces={[2]}
-      />
+    <section className="md-simulations flex flex-col justify-center gap-11 pb-[320px]">
+      <div className="md-paragraph">
+        <Paragrapg
+          sections={[
+            { id: 1, text: section11 },
+            { id: 2, text: section12 },
+            {
+              id: 4,
+              image: {
+                source: '/light-bulb/history/schema.jpg',
+                text: `например, схематичное сравнение "электрической свечи", лампы накаливания и современной LED-лампы. Это поможет визуально подчеркнуть эволюцию технологии.`,
+              },
+            },
+            { id: 5, text: section13 },
+            { id: 6, text: section14 },
+            { id: 7, text: section15 },
+            { id: 8, text: section16 },
+            { id: 9, text: section17 },
+          ]}
+        />
+      </div>
+
+      <If conditional={screenSize !== null && screenSize >= 1400}>
+        <Simulation
+          title="1. Интерактивное задание"
+          description={descriptoinOfSimulation1}
+          simulation="puzl"
+          puzlPathPage="light-bulb"
+          CORRECT_POSITIONS={CORRECT_POSITIONS}
+          PIECE_SIZES={PIECE_SIZES}
+          preinstalledPieces={[1]}
+          afterinstalledPieces={[2]}
+        />
+      </If>
 
       <Paragrapg
         sections={[
@@ -64,12 +98,13 @@ export default function LightBulbSimulationPage() {
           { id: 9, text: section9 },
         ]}
       />
-
-      <Simulation
-        title="2. Интерактивная симуляция"
-        description={descriptoinOfSimulation2}
-        simulation="light-bulb"
-      />
+      <If conditional={screenSize !== null && screenSize >= 1400}>
+        <Simulation
+          title="2. Интерактивная симуляция"
+          description={descriptoinOfSimulation2}
+          simulation="light-bulb"
+        />
+      </If>
 
       <Paragrapg sections={[{ id: 1, text: section10 }]} />
     </section>

@@ -5,8 +5,8 @@ import { TitleParagrapg } from 'widgets/TitleParagrapg';
 
 export default function LightBulbHistoryPage() {
   return (
-    <section className="mb-[135px] flex justify-center gap-11 p-5 pt-16 pb-4">
-      <aside className="flex min-h-screen basis-2xs">
+    <section className="sm-history-section md-history-section flex justify-center gap-11 p-5 pt-16 pb-4">
+      <aside className="md-aside flex min-h-screen basis-2xs">
         <AuthorCard
           images={[
             '/light-bulb/history/author/author.webp',
@@ -18,27 +18,29 @@ export default function LightBulbHistoryPage() {
         />
       </aside>
 
-      <article className="flex basis-[1032px] flex-col gap-10">
+      <article className="sm-article-page flex basis-[1032px] flex-col gap-10">
         <TitleParagrapg title="Свеча Яблочкова: история первой дуговой лампы и её создателя" />
 
-        <Paragrapg
-          sections={[
-            { id: 1, text: section1 },
-            { id: 2, text: section2 },
-            {
-              id: 4,
-              image: {
-                source: '/light-bulb/history/schema.jpg',
-                text: `например, схематичное сравнение "электрической свечи", лампы накаливания и современной LED-лампы. Это поможет визуально подчеркнуть эволюцию технологии.`,
+        <div className="md-paragraph-reverse">
+          <Paragrapg
+            sections={[
+              { id: 1, text: section1 },
+              { id: 2, text: section2 },
+              {
+                id: 4,
+                image: {
+                  source: '/light-bulb/history/schema.jpg',
+                  text: `например, схематичное сравнение "электрической свечи", лампы накаливания и современной LED-лампы. Это поможет визуально подчеркнуть эволюцию технологии.`,
+                },
               },
-            },
-            { id: 5, text: section3 },
-            { id: 6, text: section4 },
-            { id: 7, text: section5 },
-            { id: 8, text: section6 },
-            { id: 9, text: section7 },
-          ]}
-        />
+              { id: 5, text: section3 },
+              { id: 6, text: section4 },
+              { id: 7, text: section5 },
+              { id: 8, text: section6 },
+              { id: 9, text: section7 },
+            ]}
+          />
+        </div>
       </article>
     </section>
   );
