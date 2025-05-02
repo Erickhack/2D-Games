@@ -16,7 +16,7 @@ export default function TractorHistoryPage() {
         />
       </aside>
 
-      <article className="flex basis-[1032px] flex-col gap-10 sm-article-page">
+      <article className="sm-article-page flex basis-[1032px] flex-col gap-10">
         <TitleParagrapg title="Фёдор Блинов и рождение гусеничного трактора" />
 
         <div className="md-paragraph-reverse">

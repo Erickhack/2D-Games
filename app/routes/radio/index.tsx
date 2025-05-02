@@ -3,7 +3,7 @@ import RadioSimulatorsPage from 'pages/Radio/Simulators';
 
 export default function Radio() {
   return (
-    <main className="max-w-[1400px] mx-auto">
+    <main className="mx-auto max-w-[1400px] px-5">
       <RadioHistoryPage />
 
       <RadioSimulatorsPage />

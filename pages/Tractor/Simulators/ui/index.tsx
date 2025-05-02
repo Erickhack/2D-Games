@@ -11,6 +11,7 @@ import {
 import Paragrapg from 'widgets/Paragpaph/ui';
 import { If } from 'shared/components/if/ui';
 import { useEffect, useState } from 'react';
+import { useResize } from 'feature/hooks';
 
 const CORRECT_POSITIONS = [
   { x: 600, y: 510 },
@@ -29,16 +30,7 @@ const PIECE_SIZES = [
 ];
 
 export default function TractorSimulationPage() {
-  const [screenSize, setScreenSize] = useState<number | null>(null);
-
-  const handleResize = () => setScreenSize(window.innerWidth);
-
-  useEffect(() => {
-    setScreenSize(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const screenSize = useResize();
 
   return (
     <section className="md-simulations flex flex-col justify-center gap-11 pb-[320px]">
@@ -69,15 +61,13 @@ export default function TractorSimulationPage() {
         />
       </div>
 
-      <div>
-        <Paragrapg
-          sections={[
-            { id: 1, text: section1 },
-            { id: 2, text: section2 },
-            { id: 3, text: section3 },
-          ]}
-        />
-      </div>
+      <Paragrapg
+        sections={[
+          { id: 1, text: section1 },
+          { id: 2, text: section2 },
+          { id: 3, text: section3 },
+        ]}
+      />
 
       <If conditional={screenSize !== null && screenSize >= 1400}>
         <Simulation
